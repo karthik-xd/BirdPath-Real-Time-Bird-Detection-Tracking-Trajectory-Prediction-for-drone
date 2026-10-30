@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BirdPath // Dedicated Trajectory Testing Studio</title>
+    <style>
+        :root {
+            --bg-dark: #0a0c10;
+            --panel-bg: #131622;
+            --panel-border: #22283a;
+            --accent-green: #00E676;
+            --accent-cyan: #00E5FF;
+            --accent-magenta: #E040FB;
+            --accent-yellow: #FFD600;
+            --accent-orange: #FF9100;
+            --text-main: #FFFFFF;
+            --text-dim: #94a3b8;
+            --red-alert: #FF1744;
+            --pred-red: #ff3344;
+            --act-blue: #0088ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .badge-test {
+            background: rgba(0, 229, 255, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--text-dim);
+            background: #1c202d;
+            border: 1px solid var(--panel-border);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn:hover {
+            color: #fff;
+            border-color: var(--accent-cyan);
+        }
+
+        .nav-btn.active {
+            background: rgba(0, 229, 255, 0.15);
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 16px 24px;
+            flex: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Step Card */
+        .card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .step-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        input[type="text"], select {
+            background: #090c13;
+            border: 1px solid var(--panel-border);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--accent-cyan);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #26e9ff;
+            box-shadow: 0 0 14px rgba(0, 229, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: #1c202d;
+            border-color: var(--panel-border);
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        .btn-danger {
+            background: rgba(255, 23, 68, 0.15);
+            border-color: var(--red-alert);
+            color: var(--red-alert);
+        }
+
+        .btn-danger:hover {
+            background: var(--red-alert);
+            color: #fff;
+        }
+
+        /* Main Workspace Layout */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 16px;
+        }
+
+        @media (max-width: 1100px) {
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Player Viewport */
+        .player-viewport {
+            position: relative;
+            background: #000;
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 480px;
+        }
+
+        .player-viewport img {
+            width: 100%;
+            height: auto;
+            max-height: 65vh;
+            display: block;
+            object-fit: contain;
+        }
+
+        .player-placeholder {
+            color: #64748b;
+            font-size: 0.95rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        /* Custom Frame Gap Toolbar */
+        .gap-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 10px 14px;
+            background: #0f121b;
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+        }
+
+        .btn-gap {
+            background: #090c13;
+            color: var(--text-dim);
+            border: 1px solid var(--panel-border);
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-gap:hover {
+            color: #fff;
+            border-color: var(--accent-cyan);
+        }
+
+        .btn-gap.active {
+            background: var(--accent-cyan);
+            color: #000;
+            border-color: var(--accent-cyan);
+        }
+
+        .layer-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            background: #090c13;
+            border: 1px solid var(--panel-border);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            user-select: none;
+        }
+
+        .layer-pill input {
+            accent-color: var(--accent-cyan);
+        }
+
+        /* Bird Visibility Chips */
+        .bird-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #090c13;
+            border: 1px solid var(--panel-border);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .bird-chip:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        .bird-chip.active {
+            background: rgba(0, 229, 255, 0.12);
+            border-color: var(--accent-cyan);
+            color: #fff;
+        }
+
+        .bird-chip input {
+            accent-color: var(--accent-cyan);
+            cursor: pointer;
+        }
+
+        /* Accuracy & Kinematics Column */
+        .stats-col {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .k-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .k-box {
+            background: #0a0d15;
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .k-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .k-val {
+            font-size: 1.3rem;
+            font-weight: 800;
+            font-family: monospace;
+            color: #fff;
+        }
+
+        .k-val.green { color: var(--accent-green); }
+        .k-val.cyan { color: var(--accent-cyan); }
+        .k-val.yellow { color: var(--accent-yellow); }
+        .k-val.magenta { color: var(--accent-magenta); }
+
+        .compass-panel {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #0a0d15;
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 12px 16px;
+        }
+
+        .compass-dial {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-cyan);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, #101626 0%, #080a10 100%);
+        }
+
+        .compass-needle {
+            position: absolute;
+            width: 3px;
+            height: 25px;
+            background: var(--accent-yellow);
+            top: 3px;
+            transform-origin: bottom center;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .compass-center {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+        }
+
+        /* Waypoint Table */
+        .table-wrap {
+            max-height: 220px;
+            overflow-y: auto;
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            background: #0a0d15;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+            font-family: monospace;
+        }
+
+        th {
+            background: #101420;
+            padding: 7px 10px;
+            text-align: left;
+            color: var(--text-dim);
+            position: sticky;
+            top: 0;
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        td {
+            padding: 7px 10px;
+            border-bottom: 1px solid #161b29;
+            color: #e2e8f0;
+        }
+
+        tr:hover td {
+            background: #141b2c;
+        }
+
+        .path-legend {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 10px 14px;
+            background: #0a0d15;
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        .legend-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-bar {
+            width: 22px;
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background-color: var(--accent-cyan);
+            color: #000;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: 700;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <h1>BirdPath // Dedicated Trajectory Testing Studio</h1>
+            <span class="badge-test">🔬 PURE EVALUATION & INFERENCE</span>
+        </div>
+
+        <nav class="nav-links">
+            <a href="/" class="nav-btn">🧠 Learning Area</a>
+            <a href="/test" class="nav-btn active">🎯 Testing Area</a>
+            <a href="/vr?session=testing" class="nav-btn" style="background: rgba(0, 229, 255, 0.15); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); font-weight: 700;">🥽 Drone VR Mode</a>
+        </nav>
+
+        <div style="font-size: 0.78rem; font-family: monospace; color: var(--accent-green);" id="devicePill">
+            Model: checkpoints/learned_bird_gru.pt (CUDA)
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- STEP 1: Video Input / Local Video Selection -->
+        <div class="card">
+            <div class="step-title">
+                <span>📁 STEP 1: Upload Video or Give URL</span>
+            </div>
+
+            <div class="input-row">
+                <!-- Direct Input Box -->
+                <input 
+                    type="text" 
+                    id="videoInput" 
+                    style="flex: 2; min-width: 320px;" 
+                    placeholder="Paste YouTube Link or Local MP4 Path (e.g. C:\dep learning\downloads\...)"
+                />
+
+                <!-- Local Downloaded Videos Dropdown -->
+                <select id="localVideoSelect" style="flex: 1; min-width: 220px;" onchange="onSelectLocalVideo()">
+                    <option value="">-- Or Pick Downloaded Video on PC --</option>
+                </select>
+
+                <!-- Quality -->
+                <select id="videoQuality" style="width: 140px;">
+                    <option value="720p" selected>Quality: 720p</option>
+                    <option value="1080p">Quality: 1080p</option>
+                    <option value="480p">Quality: 480p</option>
+                    <option value="360p">Quality: 360p</option>
+                </select>
+
+                <!-- Start Button -->
+                <button class="btn btn-primary" id="btnStartTest" onclick="startTesting()">
+                    <span>🚀</span> Start Testing & Plotting
+                </button>
+                <button class="btn btn-secondary" id="btnPauseTest" onclick="togglePause()">
+                    <span>⏸</span> Pause
+                </button>
+                <button class="btn btn-danger" onclick="stopTesting()">
+                    <span>⏹</span> Stop
+                </button>
+                <button class="btn btn-secondary" onclick="openDownloadsFolder()" title="Open C:\dep learning\downloads in Windows Explorer">
+                    <span>📂</span> Open Saved Folder
+                </button>
+                <button class="btn btn-secondary" onclick="reloadSavedModel()" title="Reload weights trained in Learning Studio">
+                    <span>🔄</span> Reload Model
+                </button>
+                <button class="btn" style="background: linear-gradient(135deg, #00e5ff, #00e676); color: #000; font-weight: 700; box-shadow: 0 0 12px rgba(0, 229, 255, 0.4);" onclick="window.location.href='/vr?session=testing'" title="Launch Drone VR FPV Cockpit">
+                    <span>🥽</span> Drone VR
+                </button>
+            </div>
+        </div>
+
+        <!-- NEW: Birds Detected Option (Toggle Visibility ON/OFF) -->
+        <div class="card">
+            <div class="step-title" style="justify-content: space-between;">
+                <span>🦅 Birds Detected in Video (Click to Toggle Path Visibility ON/OFF)</span>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-gap" onclick="selectAllBirds(true)">Show All</button>
+                    <button class="btn-gap" onclick="selectAllBirds(false)">Hide All</button>
+                </div>
+            </div>
+
+            <div id="birdsToggleContainer" style="display: flex; flex-wrap: wrap; gap: 10px; min-height: 42px; align-items: center;">
+                <span style="color: #64748b; font-size: 0.85rem;">Start testing to populate detected birds...</span>
+            </div>
+        </div>
+
+        <!-- STEP 2 & STEP 3 & STEP 4: Live Processing & Flight Path Plotting -->
+        <div class="workspace-grid">
+
+            <!-- LEFT: Video Player + Plotted Flight Paths -->
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Step 3 Toolbar: Custom Frame Split & Prediction Horizon & Layer Switches -->
+                <div class="gap-toolbar" style="gap: 12px; padding: 10px 14px;">
+                    <!-- Frame Split Options (Strictly: 2s, 1s, 0.5s, 0.25s, Frame split ONLY) -->
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--accent-cyan);">⏱ FRAME SPLIT:</span>
+                        <button class="btn-gap btn-split active" data-split="frame" onclick="setFrameSplit('frame')">Frame split</button>
+                        <button class="btn-gap btn-split" data-split="0.25s" onclick="setFrameSplit('0.25s')">0.25 sec</button>
+                        <button class="btn-gap btn-split" data-split="0.5s" onclick="setFrameSplit('0.5s')">0.5 sec</button>
+                        <button class="btn-gap btn-split" data-split="1s" onclick="setFrameSplit('1s')">1 sec</button>
+                        <button class="btn-gap btn-split" data-split="2s" onclick="setFrameSplit('2s')">2 sec</button>
+                    </div>
+
+                    <!-- Custom Prediction Horizon: frame-based + time-based (FPS-aware) -->
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--accent-magenta);">🔮 PREDICT HORIZON:</span>
+                        <!-- Frame-count -->
+                        <span style="font-size: 0.68rem; color:#8b949e;">frames →</span>
+                        <button class="btn-gap btn-horizon" data-h="10" onclick="setPredictionHorizon(10)">10f</button>
+                        <button class="btn-gap btn-horizon" data-h="15" onclick="setPredictionHorizon(15)">15f</button>
+                        <button class="btn-gap btn-horizon active" data-h="20" onclick="setPredictionHorizon(20)">20f</button>
+                        <button class="btn-gap btn-horizon" data-h="30" onclick="setPredictionHorizon(30)">30f</button>
+                        <button class="btn-gap btn-horizon" data-h="40" onclick="setPredictionHorizon(40)">40f</button>
+                        <button class="btn-gap btn-horizon" data-h="60" onclick="setPredictionHorizon(60)">60f</button>
+                        <!-- Time-second (FPS-aware) -->
+                        <span style="font-size: 0.68rem; color:#8b949e; margin-left:4px;">seconds →</span>
+                        <button class="btn-gap btn-horizon btn-horizon-sec" data-sec="0.5" onclick="setPredictionSec(0.5)">0.5s</button>
+                        <button class="btn-gap btn-horizon btn-horizon-sec" data-sec="1"   onclick="setPredictionSec(1)">1s</button>
+                        <button class="btn-gap btn-horizon btn-horizon-sec" data-sec="2"   onclick="setPredictionSec(2)">2s</button>
+                        <button class="btn-gap btn-horizon btn-horizon-sec" data-sec="3"   onclick="setPredictionSec(3)">3s</button>
+                        <button class="btn-gap btn-horizon btn-horizon-sec" data-sec="4"   onclick="setPredictionSec(4)">4s</button>
+                    </div>
+
+                    <!-- 7 Distinct Visual Layer Pills -->
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-size: 0.74rem; font-weight: 700; color: #94a3b8;">LAYERS:</span>
+                        <label class="layer-pill" title="Layer 1: Video Feed (Uncheck for Dark Canvas)">
+                            <input type="checkbox" id="chkL1" checked onchange="toggleLayers()">
+                            <span>L1: Video</span>
+                        </label>
+                        <label class="layer-pill" title="Layer 2: Bird Detection Bounding Boxes & IDs">
+                            <input type="checkbox" id="chkL2" checked onchange="toggleLayers()">
+                            <span>L2: Boxes</span>
+                        </label>
+                        <label class="layer-pill" title="Layer 3: Actual Observed Flight Path Line">
+                            <input type="checkbox" id="chkL3" checked onchange="toggleLayers()">
+                            <span>L3: Actual</span>
+                        </label>
+                        <label class="layer-pill" title="Layer 4: GRU Model Predicted Flight Path Line">
+                            <input type="checkbox" id="chkL4" checked onchange="toggleLayers()">
+                            <span>L4: Predicted</span>
+                        </label>
+                        <label class="layer-pill" title="Layer 5: 3D Cylindrical Gaussian Glow Airspace Tunnel">
+                            <input type="checkbox" id="chkL5" checked onchange="toggleLayers()">
+                            <span>L5: Tunnel</span>
+                        </label>
+                        <label class="layer-pill" title="Layer 6: 3D Circular Rib Rings & Milestone Badges (+0.5s, +1s, +2s, +3s, +4s)">
+                            <input type="checkbox" id="chkL6" checked onchange="toggleLayers()">
+                            <span style="color: #6ee7b7; font-weight: 600;">L6: Rings</span>
+                        </label>
+                        <label class="layer-pill" title="Layer 7: On-Video Inset Trajectory Graph">
+                            <input type="checkbox" id="chkL7" checked onchange="toggleLayers()">
+                            <span>L7: Graph</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Frame Split Learned Model Selector Bar for Testing -->
+                <div class="gap-toolbar" style="gap: 12px; padding: 10px 14px; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-size: 0.78rem; font-weight: 700; color: #a78bfa;">🧠 TEST MODEL CHECKPOINT:</span>
+                        <select id="testModelSelect" onchange="onSelectTestModel(this.value)" style="background: #090c13; border: 1px solid var(--panel-border); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 0.82rem; outline: none; min-width: 320px;">
+                            <option value="auto">🎯 Auto (Match Selected Frame Split)</option>
+                        </select>
+                        <span id="testActiveModelBadge" style="font-size: 0.76rem; font-family: monospace; color: var(--accent-green); background: rgba(0, 230, 118, 0.1); padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(0, 230, 118, 0.2);">
+                            Active: Loading...
+                        </span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button class="btn btn-secondary" onclick="reloadSavedModel()" title="Reload weights from disk">
+                            <span>🔄</span> Reload Model
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Video Viewport Streaming MJPEG with Background Video -->
+                <div class="player-viewport">
+                    <img id="streamImg" src="" style="display: none;" alt="Flight Path Stream" />
+                    <div id="streamPlaceholder" class="player-placeholder">
+                        <div style="font-size: 2.2rem;">🦅</div>
+                        <div style="font-weight: 700; font-size: 1.1rem; color: #fff;">Testing Studio Ready</div>
+                        <div>Select a video above or pick from downloaded files and click <strong>"Start Testing & Plotting"</strong>.</div>
+                    </div>
+                </div>
+
+                <!-- Visual Path Legend (Matches User Graph Colors) -->
+                <div class="path-legend" style="flex-wrap: wrap; gap: 14px;">
+                    <div class="legend-chip">
+                        <div class="legend-bar" style="background: var(--act-blue);"></div>
+                        <span><strong style="color: var(--act-blue);">L3 Actual:</strong> Full Actual Path (Observed Trajectory)</span>
+                    </div>
+                    <div class="legend-chip">
+                        <div class="legend-bar" style="background: var(--pred-red);"></div>
+                        <span><strong style="color: var(--pred-red);">L4 Predicted:</strong> Full Forecast Path (GRU Line)</span>
+                    </div>
+                    <div class="legend-chip">
+                        <div class="legend-bar" style="background: rgba(255, 229, 0, 0.8); height: 8px;"></div>
+                        <span><strong style="color: #ffe500;">L5 Tunnel:</strong> 3D Cylinder Glow Corridor</span>
+                    </div>
+                    <div class="legend-chip">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; border: 2px solid #00e676; margin-right: 6px;"></div>
+                        <span><strong style="color: #6ee7b7;">L6 Rings:</strong> 3D Circular Ribs & Badges</span>
+                    </div>
+                    <div class="legend-chip">
+                        <div style="background: #111827; border: 1px solid #38bdf8; padding: 2px 5px; border-radius: 3px; font-size: 0.7rem; color: #38bdf8; margin-right: 6px; font-family: monospace;">X-Y</div>
+                        <span><strong style="color: #38bdf8;">L7 Graph:</strong> Telemetry Inset</span>
+                    </div>
+                </div>
+
+                <!-- Comparative Trajectory Plot (Like User's Uploaded Graph) -->
+                <div class="card" style="margin-top: 6px;">
+                    <div class="step-title" style="justify-content: space-between;">
+                        <span>📈 Trajectory Comparison Plot (Prediction vs Actual)</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span style="font-size: 0.78rem; color: var(--text-dim);">Inspect Bird:</span>
+                            <select id="plotBirdSelect" style="padding: 4px 10px; font-size: 0.8rem;" onchange="updateBirdPlot()">
+                                <option value="1">Bird #1</option>
+                            </select>
+                            <button class="btn-gap" onclick="updateBirdPlot()">Refresh Plot</button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: center; background: #0d1017; border-radius: 6px; padding: 10px; border: 1px solid var(--panel-border); min-height: 240px; align-items: center;">
+                        <img id="birdPlotImg" src="" alt="Select a bird to view plot" style="max-width: 100%; height: auto; display: none; border-radius: 4px;" />
+                        <div id="plotPlaceholder" style="color: #64748b; font-size: 0.85rem; padding: 30px; text-align: center;">
+                            Start video testing to generate the real-time flight trajectory comparison plot (Red: Prediction vs Blue: Actual).
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: STEP 4: Accuracy & Meaningful Kinematics -->
+            <div class="stats-col">
+                <div class="card">
+                    <div class="step-title">
+                        <span>🎯 STEP 4: Accuracy & Flight Kinematics</span>
+                        <span id="activeBirdBadge" style="color: var(--accent-yellow); font-size: 0.75rem;">0 BIRDS DETECTED</span>
+                    </div>
+
+                    <div class="k-grid">
+                        <div class="k-box">
+                            <span class="k-label">TRAJECTORY ACCURACY</span>
+                            <span class="k-val" id="valAccuracy">0.0%</span>
+                            <span style="font-size: 0.68rem; color: #64748b;">Relative Flight Path vs GT</span>
+                        </div>
+
+                        <div class="k-box">
+                            <span class="k-label">LIVE STREAM FPS</span>
+                            <span class="k-val cyan" id="valFps">0.0</span>
+                            <span style="font-size: 0.68rem; color: #64748b;">YOLO + GRU Inference</span>
+                        </div>
+
+                        <div class="k-box">
+                            <span class="k-label" id="lblAde">ADE @ 20 STEPS</span>
+                            <span class="k-val cyan" id="valAde">0.0000</span>
+                            <span style="font-size: 0.68rem; color: #64748b;">Avg Distance Error</span>
+                        </div>
+
+                        <div class="k-box">
+                            <span class="k-label" id="lblFde">FDE @ 20 STEPS</span>
+                            <span class="k-val yellow" id="valFde">0.0000</span>
+                            <span style="font-size: 0.68rem; color: #64748b;">Destination Point Error</span>
+                        </div>
+
+                        <div class="k-box">
+                            <span class="k-label">PRIMARY BIRD SPEED</span>
+                            <span class="k-val magenta" id="valSpeed">0.0 px/f</span>
+                            <span style="font-size: 0.68rem; color: #64748b;" id="valSpeedSec">0 px/s</span>
+                        </div>
+
+                        <div class="k-box">
+                            <span class="k-label">PROCESSED FRAMES</span>
+                            <span class="k-val" id="valFrames">0</span>
+                            <span style="font-size: 0.68rem; color: #64748b;">Evaluated frames</span>
+                        </div>
+
+                        <div class="k-box">
+                            <span class="k-label">TOTAL TRAINED SAMPLES</span>
+                            <span class="k-val yellow" id="valTotalSamples">329,221</span>
+                            <span style="font-size: 0.68rem; color: #64748b;">Learned Online (CUDA)</span>
+                        </div>
+
+                        <!-- Heading Compass -->
+                        <div class="compass-panel">
+                            <div>
+                                <span class="k-label">FLIGHT HEADING COMPASS</span>
+                                <div class="k-val cyan" id="valHeading">0° N</div>
+                                <span style="font-size: 0.68rem; color: #64748b;" id="valHeadingCard">Direction of Motion</span>
+                            </div>
+                            <div class="compass-dial">
+                                <div class="compass-needle" id="compassNeedle"></div>
+                                <div class="compass-center"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Bird Trajectory Coordinates Table -->
+                <div class="card">
+                    <div class="step-title">
+                        <span>📋 Live Bird Waypoint Coordinates</span>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Bird</th>
+                                    <th>Current (X, Y)</th>
+                                    <th>Speed</th>
+                                    <th>Traveled (Blue)</th>
+                                    <th>Predicted (Red)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="birdsTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">
+                                        No birds tracked yet. Start video to see live coordinates.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- 🛸 DRONE ANTI-BIRD ATTACK EVASION & FLIGHT DISPATCH LOG (SIMULATION ONLY)  -->
+        <!-- ========================================================================= -->
+        <div class="drone-evasion-card" style="background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 8px; padding: 16px 20px; margin-top: 20px; box-shadow: 0 4px 24px rgba(0,0,0,0.6);">
+            <!-- Header with High-Visibility Safety Banner -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--panel-border);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.4rem;">🛸</span>
+                    <div>
+                        <div style="font-weight: 700; font-size: 1.02rem; color: var(--accent-cyan); letter-spacing: 0.5px;">
+                            DRONE ANTI-BIRD ATTACK EVASION &amp; FLIGHT DISPATCH LOG
+                        </div>
+                        <div style="font-size: 0.76rem; color: #94a3b8;">
+                            Real-Time Predicted vs Actual Coordinates, 3D Moving Tunnel Keep-Out Airspace &amp; Drone Escape Vectors
+                        </div>
+                    </div>
+                </div>
+                <!-- Safety Banner Badge & Action Buttons -->
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.45); color: #f87171; font-size: 0.74rem; font-weight: 700; padding: 5px 12px; border-radius: 4px; font-family: monospace;">
+                        🔴 SIMULATION ONLY • NO ACTUAL RF TRANSMISSION
+                    </span>
+                    <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;" onclick="clearDroneLog()">
+                        🗑️ Clear
+                    </button>
+                    <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;" onclick="exportDroneLog()">
+                        💾 Export JSON
+                    </button>
+                    <label style="font-size: 0.78rem; color: #94a3b8; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <input type="checkbox" id="droneLogAutoScroll" checked> Auto-Scroll
+                    </label>
+                </div>
+            </div>
+
+            <!-- Live Telemetry KPI Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-bottom: 14px;">
+                <div style="background: #090d16; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 14px;">
+                    <div style="font-size: 0.68rem; color: #94a3b8; font-weight: 700;">ACTIVE AIR THREATS</div>
+                    <div id="droneThreatsCount" style="font-size: 1.25rem; font-weight: 700; color: #fbbf24; font-family: monospace;">0 Threats</div>
+                    <div id="droneThreatStatus" style="font-size: 0.68rem; color: #64748b;">Airspace clear</div>
+                </div>
+                <div style="background: #090d16; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 14px;">
+                    <div style="font-size: 0.68rem; color: #94a3b8; font-weight: 700;">3D TUNNEL KEEP-OUT RAD</div>
+                    <div id="droneKeepoutRadius" style="font-size: 1.25rem; font-weight: 700; color: #38bdf8; font-family: monospace;">0.0 px</div>
+                    <div id="droneKeepoutClearance" style="font-size: 0.68rem; color: #64748b;">Outer cylinder clearance margin</div>
+                </div>
+                <div style="background: #090d16; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 14px;">
+                    <div style="font-size: 0.68rem; color: #94a3b8; font-weight: 700;">RECOMMENDED ESCAPE VECTOR</div>
+                    <div id="droneEscapeVector" style="font-size: 1.05rem; font-weight: 700; color: #4ade80; font-family: monospace;">STANDBY</div>
+                    <div id="droneEscapeAction" style="font-size: 0.68rem; color: #64748b;">No evasion required</div>
+                </div>
+                <div style="background: #090d16; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 14px;">
+                    <div style="font-size: 0.68rem; color: #94a3b8; font-weight: 700;">DISPATCH PROTOCOL (SIMULATED)</div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: #a78bfa; font-family: monospace;">MAVLink v2.0 #147</div>
+                    <div style="font-size: 0.68rem; color: #ef4444;">[BLOCKED • PREVIEW ONLY]</div>
+                </div>
+            </div>
+
+            <!-- Terminal Logging Window -->
+            <div id="droneLogConsole" style="background: #05070c; border: 1px solid #151d2f; border-radius: 6px; padding: 12px 16px; font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace; font-size: 0.76rem; color: #cbd5e1; max-height: 280px; overflow-y: auto; line-height: 1.55; box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);">
+                <div style="color: #64748b; font-style: italic;">[SYSTEM INIT] Drone Anti-Bird Collision Avoidance Logging active in SIMULATION MODE. Start video testing to stream real-time coordinates, moving keep-out tunnels, and evasive dispatch packets...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">Testing Notification</div>
+
+    <script>
+        let currentGap = 1;
+        let isPaused = false;
+        let knownBirdIds = new Set();
+        let currentPlotBirdId = 1;
+
+        // Populate Local Videos Dropdown
+        async function loadLocalVideos() {
+            try {
+                const res = await fetch("/api/local_videos");
+                const data = await res.json();
+                const sel = document.getElementById("localVideoSelect");
+                sel.innerHTML = '<option value="">-- Or Pick Downloaded Video on PC --</option>';
+
+                if (data.videos && data.videos.length > 0) {
+                    data.videos.forEach(v => {
+                        const opt = document.createElement("option");
+                        opt.value = v.path;
+                        opt.innerText = `${v.name} (${v.size_mb} MB)`;
+                        sel.appendChild(opt);
+                    });
+                }
+            } catch (e) {}
+        }
+        loadLocalVideos();
+        loadAvailableTestModels();
+
+        function onSelectLocalVideo() {
+            const sel = document.getElementById("localVideoSelect");
+            if (sel.value) {
+                document.getElementById("videoInput").value = sel.value;
+            }
+        }
+
+        async function openDownloadsFolder() {
+            try {
+                await fetch("/api/open_folder", { method: "POST" });
+                showToast("Opening C:\\dep learning\\downloads in Explorer...");
+            } catch (e) {
+                showToast("Could not open folder: " + e.message);
+            }
+        }
+
+        // Start Testing
+        async function startTesting() {
+            const url = document.getElementById("videoInput").value.trim();
+            const quality = document.getElementById("videoQuality").value;
+
+            if (!url) {
+                showToast("Please enter a video URL or pick a local video!");
+                return;
+            }
+
+            const btn = document.getElementById("btnStartTest");
+            btn.disabled = true;
+            btn.innerText = "⏳ Loading Video...";
+
+            try {
+                const res = await fetch("/api/testing/start", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url: url, quality: quality, frame_gap: currentGap })
+                });
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    const img = document.getElementById("streamImg");
+                    img.src = `/video_feed/testing?t=${Date.now()}`;
+                    img.style.display = "block";
+                    document.getElementById("streamPlaceholder").style.display = "none";
+                    showToast("Testing & Path Plotting Started!");
+                    knownBirdIds.clear();
+                } else {
+                    showToast("Error: " + (data.message || "Failed to start"));
+                }
+            } catch (e) {
+                showToast("Connection error: " + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "🚀 Start Testing & Plotting";
+            }
+        }
+
+        async function togglePause() {
+            const btn = document.getElementById("btnPauseTest");
+            if (isPaused) {
+                await fetch("/api/testing/resume", { method: "POST" });
+                btn.innerHTML = "<span>⏸</span> Pause";
+                isPaused = false;
+            } else {
+                await fetch("/api/testing/pause", { method: "POST" });
+                btn.innerHTML = "<span>▶</span> Resume";
+                isPaused = true;
+            }
+        }
+
+        async function stopTesting() {
+            await fetch("/api/testing/stop", { method: "POST" });
+            const img = document.getElementById("streamImg");
+            img.style.display = "none";
+            img.src = "";
+            document.getElementById("streamPlaceholder").style.display = "flex";
+            showToast("Testing stopped.");
+        }
+
+        let currentSplit = "frame";
+        let currentHorizon = 20;
+        let isAutoTestModel = true;
+
+        async function loadAvailableTestModels() {
+            try {
+                const res = await fetch("/api/available_models");
+                const data = await res.json();
+                const sel = document.getElementById("testModelSelect");
+                if (!sel) return;
+                const currentVal = sel.value;
+                sel.innerHTML = '<option value="auto">🎯 Auto (Match Selected Frame Split)</option>';
+                if (data.models && data.models.length > 0) {
+                    data.models.forEach(m => {
+                        const opt = document.createElement("option");
+                        opt.value = m.id;
+                        // Mark custom models clearly so user can find their newly saved model
+                        const label = m.split === 'custom' ? `⭐ ${m.name}` : m.name;
+                        opt.innerText = `${label} [${m.samples.toLocaleString()} samples]`;
+                        sel.appendChild(opt);
+                    });
+                }
+                if (currentVal && !isAutoTestModel) {
+                    sel.value = currentVal;
+                }
+                if (data.active_testing_model) {
+                    document.getElementById("testActiveModelBadge").innerText = `Active: ${data.active_testing_model}`;
+                    const devPill = document.getElementById("devicePill");
+                    if (devPill) devPill.innerText = `Model: checkpoints/${data.active_testing_model}`;
+                    // Sync dropdown to active testing model
+                    if (!isAutoTestModel) sel.value = data.active_testing_model;
+                }
+            } catch (e) {}
+        }
+
+        async function onSelectTestModel(val) {
+            if (val === "auto") {
+                isAutoTestModel = true;
+                showToast("Auto model sync enabled: dynamically using current split model.");
+                const splitModelName = `learned_bird_gru_${currentSplit}.pt`;
+                await switchTestModel(splitModelName);
+            } else {
+                isAutoTestModel = false;
+                await switchTestModel(val);
+            }
+        }
+
+        async function switchTestModel(modelName) {
+            try {
+                const res = await fetch("/api/testing/select_model", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ model_name: modelName })
+                });
+                const data = await res.json();
+                if (data.status === "success") {
+                    document.getElementById("testActiveModelBadge").innerText = `Active: ${data.model_name} (${data.total_samples.toLocaleString()} samples)`;
+                    const devPill = document.getElementById("devicePill");
+                    if (devPill) devPill.innerText = `Model: checkpoints/${data.model_name}`;
+                    showToast(`Loaded Model Checkpoint: ${data.model_name}`);
+                } else {
+                    showToast(`❌ ${data.message}`);
+                }
+            } catch (e) {}
+        }
+
+        // Custom Frame Split (2 sec, 1 sec, 0.5 sec, 0.25 sec, Frame split ONLY)
+        async function setFrameSplit(split) {
+            currentSplit = split;
+            document.querySelectorAll(".btn-split").forEach(b => {
+                if (b.getAttribute("data-split") === split) {
+                    b.classList.add("active");
+                } else {
+                    b.classList.remove("active");
+                }
+            });
+
+            try {
+                const res = await fetch("/api/testing/set_frame_split", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ split: split, auto_switch_model: isAutoTestModel })
+                });
+                const data = await res.json();
+                if (data.active_model) {
+                    document.getElementById("testActiveModelBadge").innerText = `Active: ${data.active_model}`;
+                    const devPill = document.getElementById("devicePill");
+                    if (devPill) devPill.innerText = `Model: checkpoints/${data.active_model}`;
+                }
+                showToast(`Frame Split set to: ${split} (Interval: ${data.frame_gap} frames)`);
+            } catch (e) {}
+        }
+
+        // Custom Prediction Horizon (10f, 15f, 20f, 30f, 40f, 60f)
+        async function setPredictionHorizon(horizon) {
+            currentHorizon = horizon;
+            document.querySelectorAll(".btn-horizon").forEach(b => b.classList.remove("active"));
+            document.querySelectorAll(".btn-horizon[data-h]").forEach(b => {
+                if (parseInt(b.getAttribute("data-h")) === horizon) {
+                    b.classList.add("active");
+                }
+            });
+
+            try {
+                const res = await fetch("/api/testing/set_prediction_horizon", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ horizon: horizon })
+                });
+                const data = await res.json();
+                showToast(`Prediction Horizon set to: ${horizon} frames!`);
+                const adeLbl = document.getElementById("lblAde");
+                const fdeLbl = document.getElementById("lblFde");
+                if (adeLbl) adeLbl.innerText = `ADE @ ${horizon} STEPS`;
+                if (fdeLbl) fdeLbl.innerText = `FDE @ ${horizon} STEPS`;
+            } catch (e) {}
+        }
+
+        // Custom Prediction Horizon in Seconds (0.5s, 1s, 2s, 3s, 4s)
+        async function setPredictionSec(seconds) {
+            document.querySelectorAll(".btn-horizon").forEach(b => b.classList.remove("active"));
+            document.querySelectorAll(".btn-horizon-sec").forEach(b => {
+                if (parseFloat(b.getAttribute("data-sec")) === seconds) {
+                    b.classList.add("active");
+                }
+            });
+
+            try {
+                const res = await fetch("/api/testing/set_prediction_seconds", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ seconds: seconds })
+                });
+                const data = await res.json();
+                const frames = data.prediction_horizon || Math.round(seconds * 30);
+                showToast(`Prediction Horizon set to: ${seconds}s (${frames} frames)!`);
+                const adeLbl = document.getElementById("lblAde");
+                const fdeLbl = document.getElementById("lblFde");
+                if (adeLbl) adeLbl.innerText = `ADE @ ${frames} STEPS (${seconds}s)`;
+                if (fdeLbl) fdeLbl.innerText = `FDE @ ${frames} STEPS (${seconds}s)`;
+            } catch (e) {}
+        }
+
+        // Reload Saved Model from Disk
+        async function reloadSavedModel() {
+            try {
+                const sel = document.getElementById("testModelSelect");
+                const chosen = (sel && sel.value !== "auto") ? sel.value : null;
+                const res = await fetch("/api/testing/reload_model", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ model_name: chosen })
+                });
+                const data = await res.json();
+                showToast(`Model reloaded! Total learned samples: ${data.total_samples.toLocaleString()}`);
+                await loadAvailableTestModels();
+            } catch (e) {
+                showToast("Failed to reload model: " + e.message);
+            }
+        }
+
+        // Legacy compatibility
+        async function setFrameGap(gap) {
+            if (gap === 1) setFrameSplit("frame");
+            else if (gap <= 8) setFrameSplit("0.25s");
+            else if (gap <= 15) setFrameSplit("0.5s");
+            else if (gap <= 30) setFrameSplit("1s");
+            else setFrameSplit("2s");
+        }
+
+        // Layer Toggles (All 7 Visual Layers)
+        async function toggleLayers() {
+            const l1 = document.getElementById("chkL1").checked;
+            const l2 = document.getElementById("chkL2").checked;
+            const l3 = document.getElementById("chkL3").checked;
+            const l4 = document.getElementById("chkL4").checked;
+            const l5 = document.getElementById("chkL5").checked;
+            const l6 = document.getElementById("chkL6").checked;
+            const l7 = document.getElementById("chkL7").checked;
+
+            await fetch("/api/testing/toggle_layers", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    layer1: l1,
+                    layer2: l2,
+                    layer3: l3,
+                    layer4: l4,
+                    layer5: l5,
+                    layer6: l6,
+                    layer7: l7
+                })
+            });
+        }
+
+        // Toggle Single Bird Visibility
+        async function toggleBird(birdId) {
+            try {
+                const res = await fetch("/api/testing/toggle_bird_visibility", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ bird_id: birdId })
+                });
+                const data = await res.json();
+                updateBirdChipsUI(data.visible_ids);
+            } catch (e) {}
+        }
+
+        // Select All or None Birds
+        async function selectAllBirds(select) {
+            try {
+                const birdsRes = await fetch("/api/testing/detected_birds");
+                const bData = await birdsRes.json();
+                const targetIds = select ? bData.birds.map(b => b.id) : [];
+
+                const res = await fetch("/api/testing/toggle_bird_visibility", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ visible_ids: targetIds })
+                });
+                const data = await res.json();
+                updateBirdChipsUI(data.visible_ids);
+                showToast(select ? "All birds visible on video." : "All birds hidden.");
+            } catch (e) {}
+        }
+
+        // Update Bird Chips UI
+        function updateBirdChipsUI(visibleIds) {
+            const visSet = new Set(visibleIds || []);
+            document.querySelectorAll(".bird-chip").forEach(chip => {
+                const bId = parseInt(chip.getAttribute("data-bird-id"));
+                const chk = chip.querySelector("input");
+                if (visSet.has(bId)) {
+                    chip.classList.add("active");
+                    if (chk) chk.checked = true;
+                } else {
+                    chip.classList.remove("active");
+                    if (chk) chk.checked = false;
+                }
+            });
+        }
+
+        // Update Comparative Trajectory Plot
+        async function updateBirdPlot() {
+            const sel = document.getElementById("plotBirdSelect");
+            const birdId = parseInt(sel.value) || 1;
+            currentPlotBirdId = birdId;
+
+            const img = document.getElementById("birdPlotImg");
+            const ph = document.getElementById("plotPlaceholder");
+
+            img.src = `/api/testing/bird_plot_image/${birdId}?t=${Date.now()}`;
+            img.onload = () => {
+                img.style.display = "block";
+                ph.style.display = "none";
+            };
+        }
+
+        // Live Telemetry Polling (Every 600ms)
+        async function pollStats() {
+            try {
+                const res = await fetch("/api/testing/stats");
+                const data = await res.json();
+
+                document.getElementById("valFps").innerText = data.is_finished ? "0.0 (Done)" : (data.fps || "0.0");
+                document.getElementById("valFrames").innerText = data.frame_count || "0";
+                
+                if (data.active_model) {
+                    const badge = document.getElementById("testActiveModelBadge");
+                    if (badge) badge.innerText = `Active: ${data.active_model} (${(data.total_samples || 0).toLocaleString()} samples)`;
+                    const devPill = document.getElementById("devicePill");
+                    if (devPill) devPill.innerText = `Model: checkpoints/${data.active_model}`;
+                }
+                
+                const hasBirds = (data.total_detected > 0);
+                const activeCount = data.active_birds || 0;
+                const totalBirds = data.total_detected || 0;
+
+                if (data.is_finished) {
+                    if (hasBirds) {
+                        document.getElementById("activeBirdBadge").innerText = `✅ COMPLETE • ${activeCount} BIRDS IN FRAME (${totalBirds} TOTAL)`;
+                        document.getElementById("activeBirdBadge").style.color = "var(--accent-green)";
+                    } else {
+                        document.getElementById("activeBirdBadge").innerText = `⚠️ COMPLETE • NO FLYING BIRDS DETECTED`;
+                        document.getElementById("activeBirdBadge").style.color = "var(--accent-yellow)";
+                    }
+                } else if (data.is_running) {
+                    if (hasBirds) {
+                        document.getElementById("activeBirdBadge").innerText = `▶ ${activeCount} BIRDS ACTIVE IN FRAME`;
+                        document.getElementById("activeBirdBadge").style.color = "var(--accent-cyan)";
+                    } else {
+                        document.getElementById("activeBirdBadge").innerText = `▶ SCANNING FOR BIRDS... (0 DETECTED)`;
+                        document.getElementById("activeBirdBadge").style.color = "#94a3b8";
+                    }
+                } else {
+                    document.getElementById("activeBirdBadge").innerText = `${totalBirds} BIRDS DETECTED`;
+                    document.getElementById("activeBirdBadge").style.color = "#94a3b8";
+                }
+
+                // Accuracy & Errors
+                if (!hasBirds) {
+                    document.getElementById("valAccuracy").innerText = "0.0% (No Birds)";
+                    document.getElementById("valAccuracy").className = "k-val";
+                    document.getElementById("valAde").innerText = "0.0000";
+                    document.getElementById("valFde").innerText = "0.0000";
+                    document.getElementById("valSpeed").innerText = "0.0 px/f";
+                    document.getElementById("valSpeedSec").innerText = "0 px/s";
+                    document.getElementById("valHeading").innerText = "0°";
+                    document.getElementById("compassNeedle").style.transform = "rotate(0deg)";
+                    document.getElementById("valHeadingCard").innerText = "No flight motion";
+                } else {
+                    const acc = (data.test_accuracy !== undefined) ? data.test_accuracy : 0.0;
+                    document.getElementById("valAccuracy").innerText = acc.toFixed(1) + "%";
+                    document.getElementById("valAccuracy").className = "k-val green";
+                    const ade = data.test_ade || 0.0;
+                    const fde = data.test_fde || 0.0;
+                    document.getElementById("valAde").innerText = ade.toFixed(4);
+                    document.getElementById("valFde").innerText = fde.toFixed(4);
+                }
+
+                const totalSamples = data.total_samples || 0;
+                const sampleEl = document.getElementById("valTotalSamples");
+                if (sampleEl) sampleEl.innerText = totalSamples.toLocaleString();
+                const devPill = document.getElementById("devicePill");
+                if (devPill && totalSamples > 0) {
+                    devPill.innerText = `Model: learned_bird_gru.pt (CUDA) • ${totalSamples.toLocaleString()} Samples Learned`;
+                }
+
+                // Update Drone Anti-Bird Evasion Telemetry & Simulation Log
+                if (data.drone_evasion) {
+                    updateDroneEvasionTelemetry(data.drone_evasion);
+                }
+
+                // Poll Detected Birds for the Options List
+                const bRes = await fetch("/api/testing/detected_birds");
+                const bData = await bRes.json();
+
+                const container = document.getElementById("birdsToggleContainer");
+                const plotSel = document.getElementById("plotBirdSelect");
+                const tbody = document.getElementById("birdsTableBody");
+
+                if (bData.birds && bData.birds.length > 0) {
+                    // Check if new birds arrived
+                    let needsRebuild = false;
+                    bData.birds.forEach(b => {
+                        if (!knownBirdIds.has(b.id)) {
+                            knownBirdIds.add(b.id);
+                            needsRebuild = true;
+                        }
+                    });
+
+                    if (needsRebuild) {
+                        const visSet = new Set(bData.visible_ids || []);
+                        container.innerHTML = bData.birds.map(b => `
+                            <div class="bird-chip ${visSet.has(b.id) ? 'active' : ''}" data-bird-id="${b.id}" onclick="toggleBird(${b.id})">
+                                <input type="checkbox" ${visSet.has(b.id) ? 'checked' : ''} onclick="event.stopPropagation(); toggleBird(${b.id})" />
+                                <span><strong>Bird #${b.id}</strong> (${b.total_frames} frames | ${b.speed} px/f)</span>
+                            </div>
+                        `).join("");
+
+                        // Update plot selector
+                        plotSel.innerHTML = bData.birds.map(b => `
+                            <option value="${b.id}" ${b.id === currentPlotBirdId ? 'selected' : ''}>Bird #${b.id} (${b.total_frames} frames)</option>
+                        `).join("");
+
+                        // Auto-refresh plot if image not yet visible
+                        const img = document.getElementById("birdPlotImg");
+                        if (img.style.display === "none") {
+                            updateBirdPlot();
+                        }
+                    }
+
+                    // Primary Kinematics from First Active Bird
+                    const primary = bData.birds[0];
+                    document.getElementById("valSpeed").innerText = `${primary.speed || 0.0} px/f`;
+                    document.getElementById("valSpeedSec").innerText = `${Math.round((primary.speed || 0.0) * 30)} px/s`;
+
+                    const heading = Math.round(primary.heading || 0);
+                    document.getElementById("valHeading").innerText = `${heading}°`;
+                    document.getElementById("compassNeedle").style.transform = `rotate(${heading}deg)`;
+
+                    const cardinals = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+                    const card = cardinals[Math.floor(((heading + 22.5) % 360) / 45)];
+                    document.getElementById("valHeadingCard").innerText = `Flying toward ${card}`;
+
+                    // Update Table
+                    tbody.innerHTML = bData.birds.map(b => `
+                        <tr>
+                            <td><strong style="color: var(--accent-cyan);">#${b.id}</strong></td>
+                            <td>(${b.current_pos ? b.current_pos[0] : 0}, ${b.current_pos ? b.current_pos[1] : 0})</td>
+                            <td>${b.speed} px/f</td>
+                            <td style="color: var(--act-blue); font-weight: 700;">${b.actual_pts_count || b.total_frames} pts</td>
+                            <td style="color: var(--pred-red); font-weight: 700;">${b.pred_pts_count || 21} pts</td>
+                        </tr>
+                    `).join("");
+                } else {
+                    container.innerHTML = `
+                        <div style="color: #64748b; font-size: 0.82rem; padding: 6px 0;">
+                            No flying birds detected in this video.
+                        </div>
+                    `;
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">
+                                No flying birds detected in this video.
+                            </td>
+                        </tr>
+                    `;
+                }
+            } catch (e) {}
+        }
+        setInterval(pollStats, 600);
+
+        // ── DRONE ANTI-BIRD ATTACK EVASION & DISPATCH LOG (SIMULATION) ───────
+        let droneLogHistory = [];
+        let lastDroneLogTime = 0;
+
+        function updateDroneEvasionTelemetry(droneData) {
+            if (!droneData) return;
+            const threats = droneData.threats || [];
+            const countEl = document.getElementById("droneThreatsCount");
+            const statusEl = document.getElementById("droneThreatStatus");
+            const radEl = document.getElementById("droneKeepoutRadius");
+            const clearEl = document.getElementById("droneKeepoutClearance");
+            const escEl = document.getElementById("droneEscapeVector");
+            const actEl = document.getElementById("droneEscapeAction");
+            const consoleEl = document.getElementById("droneLogConsole");
+
+            if (threats.length === 0) {
+                if (countEl) countEl.innerText = "0 Threats";
+                if (statusEl) statusEl.innerText = "Airspace clear (Nominal Flight)";
+                if (radEl) radEl.innerText = "0.0 px";
+                if (clearEl) clearEl.innerText = "No keep-out zone active";
+                if (escEl) escEl.innerText = "STANDBY";
+                if (actEl) actEl.innerText = "No evasion required";
+                return;
+            }
+
+            const t = threats[0];
+            if (countEl) countEl.innerText = `${threats.length} Threat${threats.length > 1 ? 's' : ''} Tracked`;
+            if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">⚠️ ${t.threat_level}</span> (TCPA: ${t.time_to_intercept_sec}s)`;
+            if (radEl) radEl.innerText = `${t.tunnel_keepout.tube_radius_px} px`;
+            if (clearEl) clearEl.innerText = `Keep-Out Clearance: ${t.tunnel_keepout.airspace_clearance_px} px`;
+            if (escEl) escEl.innerText = `HEADING ${t.evasion_heading_deg}° [dx:${t.evasion_vector.dx}, dy:${t.evasion_vector.dy}]`;
+            if (actEl) actEl.innerText = `${t.evasion_maneuver} • Throttle: ${t.recommended_throttle_pct}%`;
+
+            // Append to log console (throttled to ~1 entry every 800ms)
+            const now = Date.now();
+            if (now - lastDroneLogTime < 800) return;
+            lastDroneLogTime = now;
+
+            threats.forEach(th => {
+                const ms = th.predicted_milestones || {};
+                const p05 = ms["0.5s"] ? `(${ms["0.5s"].x}, ${ms["0.5s"].y})` : "N/A";
+                const p1  = ms["1.0s"] ? `(${ms["1.0s"].x}, ${ms["1.0s"].y})` : "N/A";
+                const p2  = ms["2.0s"] ? `(${ms["2.0s"].x}, ${ms["2.0s"].y})` : "N/A";
+                const p3  = ms["3.0s"] ? `(${ms["3.0s"].x}, ${ms["3.0s"].y})` : "N/A";
+                const p4  = ms["4.0s"] ? `(${ms["4.0s"].x}, ${ms["4.0s"].y})` : "N/A";
+
+                const logItem = {
+                    timestamp: droneData.timestamp || new Date().toISOString().substring(11, 23),
+                    bird_id: th.bird_id,
+                    actual_coords: th.actual_coords,
+                    speed_px_f: th.speed_px_f,
+                    speed_px_sec: th.speed_px_sec,
+                    heading_deg: th.heading_deg,
+                    predicted_milestones: th.predicted_milestones,
+                    tunnel_keepout: th.tunnel_keepout,
+                    threat_level: th.threat_level,
+                    evasion_vector: th.evasion_vector,
+                    evasion_heading_deg: th.evasion_heading_deg,
+                    evasion_target_point: th.evasion_target_point,
+                    evasion_maneuver: th.evasion_maneuver,
+                    recommended_throttle_pct: th.recommended_throttle_pct,
+                    time_to_intercept_sec: th.time_to_intercept_sec,
+                    simulated_mavlink_packet: th.simulated_mavlink_packet
+                };
+                droneLogHistory.push(logItem);
+                if (droneLogHistory.length > 120) droneLogHistory.shift();
+
+                if (consoleEl) {
+                    const entryDiv = document.createElement("div");
+                    entryDiv.style.marginBottom = "8px";
+                    entryDiv.style.borderBottom = "1px solid #111827";
+                    entryDiv.style.paddingBottom = "6px";
+                    entryDiv.innerHTML = `
+                        <div style="color: #fbbf24; font-weight: 700;">
+                            [${logItem.timestamp}] ⚠️ <span style="color:#ef4444;">THREAT INTERCEPT ALERT:</span> BIRD #${th.bird_id} (${th.threat_level}) • TCPA: <span style="color:#38bdf8;">${th.time_to_intercept_sec}s</span>
+                        </div>
+                        <div style="color: #cbd5e1; margin-left: 14px;">
+                            ├─ <span style="color: #e2e8f0; font-weight: 600;">Actual Coordinates:</span> X: <span style="color:#f472b6;">${th.actual_coords.x}</span>, Y: <span style="color:#f472b6;">${th.actual_coords.y}</span> | Spd: <span style="color:#facc15;">${th.speed_px_f} px/f</span> (${th.speed_px_sec} px/s) | Heading: <span style="color:#facc15;">${th.heading_deg}°</span><br>
+                            ├─ <span style="color: #e2e8f0; font-weight: 600;">Predicted Milestones:</span> +0.5s: <span style="color:#4ade80;">${p05}</span> | +1.0s: <span style="color:#4ade80;">${p1}</span> | +2.0s: <span style="color:#4ade80;">${p2}</span> | +3.0s: <span style="color:#4ade80;">${p3}</span> | +4.0s: <span style="color:#4ade80;">${p4}</span><br>
+                            ├─ <span style="color: #e2e8f0; font-weight: 600;">3D Cylinder Tunnel:</span> Base Rad: <span style="color:#38bdf8;">${th.tunnel_keepout.base_radius_px}px</span> | Tube Radius: <span style="color:#38bdf8;">${th.tunnel_keepout.tube_radius_px}px</span> | Keep-Out Margin: <span style="color:#a78bfa;">${th.tunnel_keepout.airspace_clearance_px}px</span><br>
+                            ├─ <span style="color: #4ade80; font-weight: 700;">Drone Escape Command:</span> <span style="color:#4ade80;">${th.evasion_maneuver}</span> -> Heading: <span style="color:#22d3ee;">${th.evasion_heading_deg}°</span> (Vector: dx:${th.evasion_vector.dx}, dy:${th.evasion_vector.dy}) | Throttle: <span style="color:#facc15;">${th.recommended_throttle_pct}%</span><br>
+                            └─ <span style="color: #94a3b8; font-weight: 600;">Simulated Dispatch:</span> MAVLink #147 [TRAJECTORY_WAYPOINTS] -> DRONE-01 Target(${th.evasion_target_point.x}, ${th.evasion_target_point.y}, +15m) • <span style="color:#ef4444; font-weight:700;">[SIMULATION ONLY • NO ACTUAL RF TRANSMISSION]</span>
+                        </div>
+                    `;
+                    consoleEl.appendChild(entryDiv);
+
+                    const autoScroll = document.getElementById("droneLogAutoScroll");
+                    if (autoScroll && autoScroll.checked) {
+                        consoleEl.scrollTop = consoleEl.scrollHeight;
+                    }
+                }
+            });
+        }
+
+        function clearDroneLog() {
+            droneLogHistory = [];
+            const consoleEl = document.getElementById("droneLogConsole");
+            if (consoleEl) {
+                consoleEl.innerHTML = '<div style="color: #64748b; font-style: italic;">[CONSOLE CLEARED] Drone Anti-Bird Collision Avoidance Logging cleared. Awaiting new flight telemetry...</div>';
+            }
+        }
+
+        function exportDroneLog() {
+            if (droneLogHistory.length === 0) {
+                showToast("No drone evasion telemetry in buffer to export.");
+                return;
+            }
+            const blob = new Blob([JSON.stringify(droneLogHistory, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `drone_bird_evasion_log_${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("Exported drone anti-bird evasion log JSON!");
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.innerText = msg;
+            t.style.opacity = "1";
+            setTimeout(() => { t.style.opacity = "0"; }, 3000);
+        }
+    </script>
+</body>
+</html>

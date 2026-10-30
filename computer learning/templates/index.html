@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BirdPath // Learning Area</title>
+    <style>
+        :root {
+            --bg-dark: #0f1117;
+            --panel-bg: #161922;
+            --panel-border: #232734;
+            --accent-green: #00E676;
+            --accent-cyan: #00E5FF;
+            --accent-magenta: #E040FB;
+            --accent-yellow: #FFD600;
+            --text-main: #FFFFFF;
+            --text-dim: #9E9E9E;
+            --red-alert: #FF1744;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand h1 {
+            font-size: 1.25rem;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+
+        .brand .badge {
+            background-color: rgba(0, 230, 118, 0.15);
+            color: var(--accent-green);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(0, 230, 118, 0.3);
+        }
+
+        .device-badge {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--accent-cyan);
+            background: rgba(0, 229, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 229, 255, 0.2);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Control Bar */
+        .control-bar {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            gap: 8px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background-color: #0b0d13;
+            border: 1px solid var(--panel-border);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent-green);
+        }
+
+        select {
+            background-color: #0b0d13;
+            border: 1px solid var(--panel-border);
+            color: #fff;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-green);
+            color: #000;
+        }
+
+        .btn-secondary {
+            background-color: #2b3142;
+            color: #fff;
+        }
+
+        .btn-danger {
+            background-color: var(--red-alert);
+            color: #fff;
+        }
+
+        .btn-split, .btn-horizon {
+            background: #11141e;
+            border: 1px solid var(--panel-border);
+            color: #94a3b8;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-split:hover, .btn-horizon:hover {
+            border-color: var(--accent-cyan);
+            color: #fff;
+        }
+
+        .btn-split.active {
+            background: rgba(0, 229, 255, 0.15);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .btn-horizon.active {
+            background: rgba(224, 64, 251, 0.15);
+            border-color: var(--accent-magenta);
+            color: var(--accent-magenta);
+        }
+
+        /* Layout Grid */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Monitor Container */
+        .monitor-card {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .monitor-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .monitor-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .layer-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .layer-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #0b0d13;
+            border: 1px solid var(--panel-border);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .layer-toggle input {
+            accent-color: var(--accent-green);
+            cursor: pointer;
+        }
+
+        .monitor-viewport {
+            background-color: #050608;
+            min-height: 480px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .monitor-viewport img {
+            width: 100%;
+            height: auto;
+            max-height: 640px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .placeholder-text {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            text-align: center;
+        }
+
+        /* Legend Bar */
+        .legend-bar {
+            background-color: #12141c;
+            border-top: 1px solid var(--panel-border);
+            padding: 10px 16px;
+            display: flex;
+            gap: 20px;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-line {
+            width: 16px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        /* Telemetry Sidebar */
+        .telemetry-card {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .telemetry-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-bottom: 1px solid var(--panel-border);
+            padding-bottom: 8px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat-box {
+            background-color: #0b0d13;
+            border: 1px solid var(--panel-border);
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.15rem;
+            font-weight: 700;
+            font-family: monospace;
+            color: var(--accent-green);
+        }
+
+        .stat-value.cyan {
+            color: var(--accent-cyan);
+        }
+
+        .stat-value.yellow {
+            color: var(--accent-yellow);
+        }
+
+        .save-box {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* Navigation Tabs */
+        .nav-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--text-dim);
+            background: #1c202d;
+            border: 1px solid var(--panel-border);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn:hover {
+            color: #fff;
+            border-color: var(--accent-cyan);
+        }
+
+        .nav-btn.active {
+            background: rgba(0, 230, 118, 0.15);
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background-color: var(--accent-green);
+            color: #000;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <h1>BirdPath // Learning Area</h1>
+            <span class="badge">ON-DEVICE CONTINUOUS LEARNING</span>
+        </div>
+
+        <nav class="nav-links">
+            <a href="/" class="nav-btn active">🧠 Learning Area</a>
+            <a href="/test" class="nav-btn">🎯 Testing Area</a>
+            <a href="/vr?session=learning" class="nav-btn" style="background: rgba(0, 229, 255, 0.15); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); font-weight: 700;">🥽 Drone VR Mode</a>
+        </nav>
+
+        <div id="deviceBadge" class="device-badge">Device: Checking...</div>
+    </header>
+
+    <div class="container">
+        <!-- Control Bar -->
+        <div class="control-bar">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="videoUrl" 
+                    placeholder="Paste YouTube Link or Local Video File Path (e.g. https://www.youtube.com/watch?v=...)"
+                    value=""
+                />
+            </div>
+
+            <!-- Downloaded Videos Dropdown (Instant selection) -->
+            <select id="localVideoSelect" onchange="pickLocalVideo(this.value)" style="background: #090c13; border: 1px solid var(--panel-border); color: #fff; padding: 10px 14px; border-radius: 6px; font-size: 0.88rem; outline: none; max-width: 280px;">
+                <option value="">-- Or Pick Downloaded Video on PC --</option>
+            </select>
+
+            <select id="videoQuality">
+                <option value="720p" selected>Quality: 720p (HD)</option>
+                <option value="1080p">Quality: 1080p (Full HD)</option>
+                <option value="480p">Quality: 480p</option>
+                <option value="360p">Quality: 360p</option>
+                <option value="best">Quality: Best Available</option>
+            </select>
+
+            <button class="btn btn-primary" id="btnStart" onclick="startLearning()">
+                <span>🚀</span> Start Learning
+            </button>
+            <button class="btn btn-secondary" id="btnPause" onclick="togglePause()">
+                <span>⏸</span> Pause
+            </button>
+            <button class="btn btn-danger" id="btnStop" onclick="stopLearning()">
+                <span>⏹</span> Stop
+            </button>
+            <button class="btn btn-secondary" onclick="openDownloadsFolder()" title="Open C:\dep learning\downloads in Windows Explorer">
+                <span>📂</span> Open Saved Folder
+            </button>
+            <button class="btn btn-secondary" id="btnSaveModel" onclick="openSaveModelDialog()" title="Save trained model weights to disk">
+                <span>💾</span> Save Model
+            </button>
+            <button class="btn" style="background: linear-gradient(135deg, #00e5ff, #00e676); color: #000; font-weight: 700; box-shadow: 0 0 12px rgba(0, 229, 255, 0.4);" onclick="window.location.href='/vr?session=learning'" title="Launch Drone VR FPV Cockpit">
+                <span>🥽</span> Drone VR
+            </button>
+        </div>
+
+        <!-- Toolbar: Frame Split (2s, 1s, 0.5s, 0.25s, Frame split ONLY) & Custom Prediction Horizon -->
+        <div style="background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 8px; padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;">
+            <!-- Frame Split (Strictly 5 options: 2s, 1s, 0.5s, 0.25s, Frame split ONLY) -->
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan);">⏱ FRAME SPLIT:</span>
+                <button class="btn-split active" data-split="frame" onclick="setLearningFrameSplit('frame')">Frame split</button>
+                <button class="btn-split" data-split="0.25s" onclick="setLearningFrameSplit('0.25s')">0.25 sec</button>
+                <button class="btn-split" data-split="0.5s" onclick="setLearningFrameSplit('0.5s')">0.5 sec</button>
+                <button class="btn-split" data-split="1s" onclick="setLearningFrameSplit('1s')">1 sec</button>
+                <button class="btn-split" data-split="2s" onclick="setLearningFrameSplit('2s')">2 sec</button>
+            </div>
+
+            <!-- Custom Prediction Horizon: frame-based + time-based (FPS-aware) -->
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-magenta);">🔮 PREDICT HORIZON:</span>
+                <!-- Frame-count buttons -->
+                <span style="font-size: 0.72rem; color:#8b949e;">frames →</span>
+                <button class="btn-horizon" data-h="10" onclick="setLearningPredictionHorizon(10)">10f</button>
+                <button class="btn-horizon" data-h="15" onclick="setLearningPredictionHorizon(15)">15f</button>
+                <button class="btn-horizon active" data-h="20" onclick="setLearningPredictionHorizon(20)">20f</button>
+                <button class="btn-horizon" data-h="30" onclick="setLearningPredictionHorizon(30)">30f</button>
+                <button class="btn-horizon" data-h="40" onclick="setLearningPredictionHorizon(40)">40f</button>
+                <button class="btn-horizon" data-h="60" onclick="setLearningPredictionHorizon(60)">60f</button>
+                <!-- Time-second buttons (FPS-aware, computed on server) -->
+                <span style="font-size: 0.72rem; color:#8b949e; margin-left:6px;">seconds →</span>
+                <button class="btn-horizon btn-horizon-sec" data-sec="0.5" onclick="setLearningPredictionSec(0.5)">0.5s</button>
+                <button class="btn-horizon btn-horizon-sec" data-sec="1"   onclick="setLearningPredictionSec(1)">1s</button>
+                <button class="btn-horizon btn-horizon-sec" data-sec="2"   onclick="setLearningPredictionSec(2)">2s</button>
+                <button class="btn-horizon btn-horizon-sec" data-sec="3"   onclick="setLearningPredictionSec(3)">3s</button>
+                <button class="btn-horizon btn-horizon-sec" data-sec="4"   onclick="setLearningPredictionSec(4)">4s</button>
+            </div>
+        </div>
+
+        <!-- Frame Split Learned Model Selector Bar -->
+        <div style="background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 8px; padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span style="font-size: 0.8rem; font-weight: 700; color: #a78bfa;">🧠 FRAME-SPLIT LEARNED MODEL:</span>
+                <select id="modelCheckpointSelect" onchange="onSelectLearnedModel(this.value)" style="background: #090c13; border: 1px solid var(--panel-border); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; outline: none; min-width: 320px;">
+                    <option value="auto">🎯 Auto (Match Selected Frame Split)</option>
+                </select>
+                <span id="activeModelBadge" style="font-size: 0.78rem; font-family: monospace; color: var(--accent-green); background: rgba(0, 230, 118, 0.1); padding: 5px 12px; border-radius: 4px; border: 1px solid rgba(0, 230, 118, 0.2);">
+                    Active: Loading...
+                </span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button class="btn btn-secondary" onclick="openSaveModelDialog()" title="Save trained weights to disk">
+                    <span>💾</span> Save Split Model
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Workspace -->
+        <div class="workspace-grid">
+            <!-- Monitor Viewport -->
+            <div class="monitor-card">
+                <div class="monitor-header">
+                    <div class="monitor-title">
+                        <span>LIVE MONITOR:</span>
+                        <span id="videoTitle" style="color: var(--accent-cyan); font-weight: 400;">Ready to load</span>
+                    </div>
+
+                    <!-- Layer 1 through 7 Visibility Toggles -->
+                    <div class="layer-controls">
+                        <span style="font-size: 0.74rem; font-weight: 700; color: #94a3b8; margin-right: 2px;">LAYERS:</span>
+                        <label class="layer-toggle" title="Layer 1: Video Stream (Uncheck for Dark Canvas)">
+                            <input type="checkbox" id="toggleL1" checked onchange="updateLayers()">
+                            <span>L1 Video</span>
+                        </label>
+                        <label class="layer-toggle" title="Layer 2: Bird Bounding Boxes, Speed & Heading">
+                            <input type="checkbox" id="toggleL2" checked onchange="updateLayers()">
+                            <span>L2 Boxes</span>
+                        </label>
+                        <label class="layer-toggle" title="Layer 3: Actual Observed Flight Path Line">
+                            <input type="checkbox" id="toggleL3" checked onchange="updateLayers()">
+                            <span>L3 Actual</span>
+                        </label>
+                        <label class="layer-toggle" title="Layer 4: GRU Model Predicted Flight Path Line">
+                            <input type="checkbox" id="toggleL4" checked onchange="updateLayers()">
+                            <span>L4 Predicted</span>
+                        </label>
+                        <label class="layer-toggle" title="Layer 5: 3D Cylindrical Gaussian Glow Airspace Tunnel">
+                            <input type="checkbox" id="toggleL5" checked onchange="updateLayers()">
+                            <span>L5 Tunnel</span>
+                        </label>
+                        <label class="layer-toggle" title="Layer 6: 3D Circular Rib Rings & Milestone Badges (+0.5s, +1s, +2s, +3s, +4s)">
+                            <input type="checkbox" id="toggleL6" checked onchange="updateLayers()">
+                            <span style="color: #6ee7b7; font-weight: 600;">L6 Rings</span>
+                        </label>
+                        <label class="layer-toggle" title="Layer 7: On-Video Real-time Inset Trajectory Graph">
+                            <input type="checkbox" id="toggleL7" checked onchange="updateLayers()">
+                            <span>L7 Inset Graph</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Live Stream Video Frame -->
+                <div class="monitor-viewport" id="viewport">
+                    <img id="streamImg" src="" alt="Live Monitor Feed" style="display: none;" onload="onStreamLoaded()" />
+                    <div id="streamPlaceholder" class="placeholder-text">
+                        Paste a YouTube video link above and click <strong>"Start Learning"</strong><br>
+                        <span style="font-size: 0.8rem; color: #666; margin-top: 8px; display: inline-block;">
+                            Layer 1 (Video) + Layer 2 (Bird Boxes) + Layer 3 (Predicted & Actual Flight Paths) will stream in real time.
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="legend-bar">
+                    <div class="legend-item">
+                        <div class="legend-line" style="background-color: var(--accent-magenta);"></div>
+                        <span><strong>L3 Actual Flight Path</strong> (Observed Magenta)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line" style="background-color: var(--accent-green);"></div>
+                        <span><strong>L4 Predicted Path</strong> (GRU Model Forecast)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line" style="background-color: rgba(255, 229, 0, 0.7); height: 8px;"></div>
+                        <span><strong>L5 Cylinder Tunnel</strong> (3D Cyan Corridor)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; border: 2px solid #00e676; margin-right: 6px;"></div>
+                        <span><strong>L6 Cylinder Rings</strong> (3D Ribs & Milestone Badges)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div style="background: #111827; border: 1px solid #38bdf8; padding: 2px 5px; border-radius: 3px; font-size: 0.7rem; color: #38bdf8; margin-right: 6px; font-family: monospace;">X-Y</div>
+                        <span><strong>L7 Inset Graph</strong> (Telemetry Derivative)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Telemetry & Training Metrics -->
+            <div class="telemetry-card">
+                <div class="telemetry-title">LEARNING AREA TELEMETRY</div>
+
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">STREAM FPS</div>
+                        <div class="stat-value cyan" id="valFps">0.0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">ACTIVE BIRDS</div>
+                        <div class="stat-value yellow" id="valBirds">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">BATCH LOSS</div>
+                        <div class="stat-value" id="valLoss">0.0000</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">AVG LOSS (SESSION)</div>
+                        <div class="stat-value" id="valAvgLoss">0.0000</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label" id="lblAde">ADE @ 20 STEPS</div>
+                        <div class="stat-value cyan" id="valAde">0.0000</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">AVG ADE (SESSION)</div>
+                        <div class="stat-value cyan" id="valAvgAde">0.0000</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label" id="lblFde">FDE @ 20 STEPS</div>
+                        <div class="stat-value yellow" id="valFde">0.0000</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">AVG FDE (SESSION)</div>
+                        <div class="stat-value yellow" id="valAvgFde">0.0000</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">SAMPLES LEARNED</div>
+                        <div class="stat-value" id="valSamples">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">PROCESSED FRAMES</div>
+                        <div class="stat-value" id="valFrames">0</div>
+                    </div>
+                </div>
+
+                <!-- Save Checkpoint Action -->
+                <div class="save-box" style="display:flex; gap:8px; flex-direction:column;">
+                    <button class="btn btn-secondary" style="width: 100%; justify-content: center;" onclick="openSaveModelDialog()">
+                        <span>💾</span> Save Learned Model Checkpoint
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparative Trajectory & Moving Zone Plot -->
+        <div style="background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px 18px; margin-top: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+                <span style="font-weight: 700; font-size: 0.95rem; color: var(--accent-cyan);">
+                    📊 Trajectory Comparison & Moving Zone Prediction Plot (Flap-Damped)
+                </span>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <select id="plotBirdSelect" style="background: #090c13; border: 1px solid var(--panel-border); color: #fff; padding: 4px 10px; font-size: 0.8rem; border-radius: 4px;" onchange="updateLearningBirdPlot()">
+                        <option value="1">Bird #1</option>
+                    </select>
+                    <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;" onclick="updateLearningBirdPlot()">
+                        🔄 Refresh Plot
+                    </button>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: center; align-items: center; min-height: 220px; background: #0b0f19; border-radius: 8px; overflow: hidden;">
+                <img id="birdPlotImg" src="" alt="Select a bird to view plot" style="max-width: 100%; height: auto; display: none;">
+                <div id="plotPlaceholder" style="color: #64748b; font-size: 0.85rem; padding: 30px; text-align: center;">
+                    Start video learning to generate the real-time flight trajectory & moving tunnel plot.
+                </div>
+            </div>
+        <!-- ========================================================================= -->
+        <!-- 🛸 DRONE ANTI-BIRD ATTACK EVASION & FLIGHT DISPATCH LOG (SIMULATION ONLY)  -->
+        <!-- ========================================================================= -->
+        <div class="drone-evasion-card" style="background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 8px; padding: 16px 20px; margin-top: 20px; box-shadow: 0 4px 24px rgba(0,0,0,0.6);">
+            <!-- Header with High-Visibility Safety Banner -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--panel-border);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.4rem;">🛸</span>
+                    <div>
+                        <div style="font-weight: 700; font-size: 1.02rem; color: var(--accent-cyan); letter-spacing: 0.5px;">
+                            DRONE ANTI-BIRD ATTACK EVASION &amp; FLIGHT DISPATCH LOG
+                        </div>
+                        <div style="font-size: 0.76rem; color: #94a3b8;">
+                            Real-Time Predicted vs Actual Coordinates, 3D Moving Tunnel Keep-Out Airspace &amp; Drone Escape Vectors
+                        </div>
+                    </div>
+                </div>
+                <!-- Safety Banner Badge & Action Buttons -->
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.45); color: #f87171; font-size: 0.74rem; font-weight: 700; padding: 5px 12px; border-radius: 4px; font-family: monospace;">
+                        🔴 SIMULATION ONLY • NO ACTUAL RF TRANSMISSION
+                    </span>
+                    <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;" onclick="clearDroneLog()">
+                        🗑️ Clear
+                    </button>
+                    <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;" onclick="exportDroneLog()">
+                        💾 Export JSON
+                    </button>
+                    <label style="font-size: 0.78rem; color: #94a3b8; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <input type="checkbox" id="droneLogAutoScroll" checked> Auto-Scroll
+                    </label>
+                </div>
+            </div>
+
+            <!-- Live Telemetry KPI Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-bottom: 14px;">
+                <div style="background: #090d16; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 14px;">
+                    <div style="font-size: 0.68rem; color: #94a3b8; font-weight: 700;">ACTIVE AIR THREATS</div>
+                    <div id="droneThreatsCount" style="font-size: 1.25rem; font-weight: 700; color: #fbbf24; font-family: monospace;">0 Threats</div>
+                    <div id="droneThreatStatus" style="font-size: 0.68rem; color: #64748b;">Airspace clear</div>
+                </div>
+                <div style="background: #090d16; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 14px;">
+                    <div style="font-size: 0.68rem; color: #94a3b8; font-weight: 700;">3D TUNNEL KEEP-OUT RAD</div>
+                    <div id="droneKeepoutRadius" style="font-size: 1.25rem; font-weight: 700; color: #38bdf8; font-family: monospace;">0.0 px</div>
+                    <div id="droneKeepoutClearance" style="font-size: 0.68rem; color: #64748b;">Outer cylinder clearance margin</div>
+                </div>
+                <div style="background: #090d16; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 14px;">
+                    <div style="font-size: 0.68rem; color: #94a3b8; font-weight: 700;">RECOMMENDED ESCAPE VECTOR</div>
+                    <div id="droneEscapeVector" style="font-size: 1.05rem; font-weight: 700; color: #4ade80; font-family: monospace;">STANDBY</div>
+                    <div id="droneEscapeAction" style="font-size: 0.68rem; color: #64748b;">No evasion required</div>
+                </div>
+                <div style="background: #090d16; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 14px;">
+                    <div style="font-size: 0.68rem; color: #94a3b8; font-weight: 700;">DISPATCH PROTOCOL (SIMULATED)</div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: #a78bfa; font-family: monospace;">MAVLink v2.0 #147</div>
+                    <div style="font-size: 0.68rem; color: #ef4444;">[BLOCKED • PREVIEW ONLY]</div>
+                </div>
+            </div>
+
+            <!-- Terminal Logging Window -->
+            <div id="droneLogConsole" style="background: #05070c; border: 1px solid #151d2f; border-radius: 6px; padding: 12px 16px; font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace; font-size: 0.76rem; color: #cbd5e1; max-height: 280px; overflow-y: auto; line-height: 1.55; box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);">
+                <div style="color: #64748b; font-style: italic;">[SYSTEM INIT] Drone Anti-Bird Collision Avoidance Logging active in SIMULATION MODE. Start video learning to stream real-time coordinates, moving keep-out tunnels, and evasive dispatch packets...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Model Dialog Modal -->
+    <div id="saveModelModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:#0d1117; border:1px solid #30363d; border-radius:12px; padding:28px 32px; min-width:420px; max-width:540px; box-shadow:0 8px 40px rgba(0,0,0,0.8);">
+            <div style="font-size:1.1rem; font-weight:700; color:#e6edf3; margin-bottom:18px;">💾 Save Model Checkpoint</div>
+            <div style="font-size:0.82rem; color:#8b949e; margin-bottom:14px;">
+                Enter a custom name, or leave blank to auto-name by frame split.<br>
+                <span style="color:#58a6ff;">Custom names appear in both Learning &amp; Testing dropdowns.</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom:18px;">
+                <input id="saveModelNameInput" type="text" placeholder="e.g. my_bird_model_v2  (leave blank = auto)"
+                    style="flex:1; background:#161b22; border:1px solid #30363d; color:#e6edf3; padding:10px 14px; border-radius:6px; font-size:0.9rem; outline:none;"
+                    onkeydown="if(event.key==='Enter') confirmSaveModel();" />
+                <span style="color:#8b949e; font-size:0.85rem; white-space:nowrap;">.pt</span>
+            </div>
+            <div id="saveModelCurrentSplit" style="font-size:0.78rem; color:#a78bfa; margin-bottom:20px;"></div>
+            <div style="display:flex; gap:12px; justify-content:flex-end;">
+                <button class="btn btn-secondary" onclick="closeSaveModelDialog()">Cancel</button>
+                <button class="btn" style="background: linear-gradient(135deg,#00e676,#00b0ff); color:#000; font-weight:700;" onclick="confirmSaveModel()">
+                    <span>💾</span> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast">Checkpoint Saved!</div>
+
+    <script>
+        let isPaused = false;
+        let statsInterval = null;
+
+        function onStreamLoaded() {
+            document.getElementById("streamPlaceholder").style.display = "none";
+            document.getElementById("streamImg").style.display = "block";
+        }
+
+        async function openDownloadsFolder() {
+            try {
+                await fetch("/api/open_folder", { method: "POST" });
+                showToast("Opening C:\\dep learning\\downloads in Explorer...");
+            } catch (e) {
+                showToast("Could not open folder: " + e.message);
+            }
+        }
+
+        let lossSum = 0, lossCount = 0;
+        let adeSum = 0, adeCount = 0;
+        let fdeSum = 0, fdeCount = 0;
+        let lastSamplesLearned = -1;
+
+        async function startLearning() {
+            lossSum = 0; lossCount = 0;
+            adeSum = 0; adeCount = 0;
+            fdeSum = 0; fdeCount = 0;
+            lastSamplesLearned = -1;
+
+            const url = document.getElementById("videoUrl").value.trim();
+            const quality = document.getElementById("videoQuality").value;
+
+            if (!url) {
+                alert("Please enter a YouTube video URL or local file path.");
+                return;
+            }
+
+            document.getElementById("videoTitle").innerText = "Downloading / Resolving (" + quality + ")...";
+            document.getElementById("btnStart").disabled = true;
+
+            try {
+                const res = await fetch("/api/learning/start", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url: url, quality: quality })
+                });
+                const data = await res.json();
+                if (data.status === "success") {
+                    document.getElementById("videoTitle").innerText = data.message + " [" + data.resolution + "]";
+                    const sImg = document.getElementById("streamImg");
+                    sImg.src = `/video_feed/learning?t=${Date.now()}`;
+                    sImg.style.display = "block";
+                    document.getElementById("streamPlaceholder").style.display = "none";
+                    showToast("Learning started at " + quality + "!");
+                } else {
+                    const shortMsg = data.message.split("\n")[0]; // first line only
+                    showToast("❌ " + shortMsg, 6000);
+                    document.getElementById("videoTitle").innerText = "⚠️ " + shortMsg;
+                    console.error("Start learning error:", data.message);
+                }
+            } catch (e) {
+                alert("Failed to connect to backend: " + e.message);
+            } finally {
+                document.getElementById("btnStart").disabled = false;
+            }
+        }
+
+        async function togglePause() {
+            if (isPaused) {
+                await fetch("/api/learning/resume", { method: "POST" });
+                document.getElementById("btnPause").innerHTML = "<span>⏸</span> Pause";
+                isPaused = false;
+            } else {
+                await fetch("/api/learning/pause", { method: "POST" });
+                document.getElementById("btnPause").innerHTML = "<span>▶</span> Resume";
+                isPaused = true;
+            }
+        }
+
+        async function stopLearning() {
+            await fetch("/api/learning/stop", { method: "POST" });
+            const sImg = document.getElementById("streamImg");
+            sImg.style.display = "none";
+            sImg.src = "";
+            document.getElementById("streamPlaceholder").style.display = "block";
+            document.getElementById("videoTitle").innerText = "Stopped";
+            showToast("Learning stream stopped.");
+        }
+
+        async function updateLayers() {
+            const l1 = document.getElementById("toggleL1").checked;
+            const l2 = document.getElementById("toggleL2").checked;
+            const l3 = document.getElementById("toggleL3").checked;
+            const l4 = document.getElementById("toggleL4").checked;
+            const l5 = document.getElementById("toggleL5").checked;
+            const l6 = document.getElementById("toggleL6").checked;
+            const l7 = document.getElementById("toggleL7").checked;
+
+            await fetch("/api/learning/toggle_layers", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    layer1: l1,
+                    layer2: l2,
+                    layer3: l3,
+                    layer4: l4,
+                    layer5: l5,
+                    layer6: l6,
+                    layer7: l7
+                })
+            });
+        }
+
+        let currentSplit = "frame";
+        let currentHorizon = 20;
+        let isAutoModel = true;
+
+        async function loadAvailableModels() {
+            try {
+                const res = await fetch("/api/available_models");
+                const data = await res.json();
+                const sel = document.getElementById("modelCheckpointSelect");
+                if (!sel) return;
+                const currentVal = sel.value;
+                sel.innerHTML = '<option value="auto">🎯 Auto (Match Selected Frame Split)</option>';
+                if (data.models && data.models.length > 0) {
+                    data.models.forEach(m => {
+                        const opt = document.createElement("option");
+                        opt.value = m.id;
+                        // Mark custom models clearly
+                        const label = m.split === 'custom' ? `⭐ ${m.name}` : m.name;
+                        opt.innerText = `${label} [${m.samples.toLocaleString()} samples]`;
+                        sel.appendChild(opt);
+                    });
+                }
+                // Restore selection
+                if (currentVal && currentVal !== 'auto' && !isAutoModel) {
+                    sel.value = currentVal;
+                }
+                if (data.active_learning_model) {
+                    document.getElementById("activeModelBadge").innerText = `Active: ${data.active_learning_model}`;
+                    // Ensure dropdown reflects active model
+                    if (!isAutoModel) sel.value = data.active_learning_model;
+                }
+            } catch (e) {}
+        }
+
+        async function onSelectLearnedModel(val) {
+            if (val === "auto") {
+                isAutoModel = true;
+                showToast("Auto model sync enabled: dynamically using current split model.");
+                const splitModelName = `learned_bird_gru_${currentSplit}.pt`;
+                await switchModel(splitModelName);
+            } else {
+                isAutoModel = false;
+                await switchModel(val);
+            }
+        }
+
+        async function switchModel(modelName) {
+            try {
+                const res = await fetch("/api/learning/select_model", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ model_name: modelName })
+                });
+                const data = await res.json();
+                if (data.status === "success") {
+                    document.getElementById("activeModelBadge").innerText = `Active: ${data.model_name} (${data.total_samples.toLocaleString()} samples)`;
+                    showToast(`Activated Model Checkpoint: ${data.model_name}`);
+                } else {
+                    showToast(`❌ ${data.message}`);
+                }
+            } catch (e) {}
+        }
+
+        async function setLearningFrameSplit(split) {
+            currentSplit = split;
+            _activeSplit = split;   // keep save dialog in sync
+            document.querySelectorAll(".btn-split").forEach(b => {
+                if (b.getAttribute("data-split") === split) {
+                    b.classList.add("active");
+                } else {
+                    b.classList.remove("active");
+                }
+            });
+
+            try {
+                const res = await fetch("/api/learning/set_frame_split", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ split: split, auto_switch_model: isAutoModel })
+                });
+                const data = await res.json();
+                if (data.active_model) {
+                    document.getElementById("activeModelBadge").innerText = `Active: ${data.active_model}`;
+                }
+                showToast(`Frame Split set to: ${split} (Gap: ${data.frame_gap}f)`);
+            } catch (e) {}
+        }
+
+        async function setLearningPredictionHorizon(horizon) {
+            currentHorizon = horizon;
+            // Highlight frame buttons, clear second buttons
+            document.querySelectorAll(".btn-horizon").forEach(b => {
+                b.classList.remove("active");
+            });
+            document.querySelectorAll(".btn-horizon[data-h]").forEach(b => {
+                if (parseInt(b.getAttribute("data-h")) === horizon) b.classList.add("active");
+            });
+            try {
+                await fetch("/api/learning/set_prediction_horizon", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ horizon: horizon })
+                });
+                showToast(`Prediction Horizon: ${horizon} frames`);
+            } catch (e) {}
+        }
+
+        async function setLearningPredictionSec(seconds) {
+            // Highlight second buttons, clear frame buttons
+            document.querySelectorAll(".btn-horizon").forEach(b => b.classList.remove("active"));
+            document.querySelectorAll(".btn-horizon-sec").forEach(b => {
+                if (parseFloat(b.getAttribute("data-sec")) === seconds) b.classList.add("active");
+            });
+            try {
+                const res = await fetch("/api/learning/set_prediction_seconds", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ seconds: seconds })
+                });
+                const data = await res.json();
+                const frames = data.prediction_horizon || "?";
+                showToast(`Prediction Horizon: ${seconds}s (${frames} frames @ current FPS)`);
+            } catch (e) {}
+        }
+
+        // ── Save Model Dialog ──────────────────────────────────
+        let _activeSplit = 'frame';
+
+        function openSaveModelDialog() {
+            // Show the current frame split so user knows the auto name
+            const splitLabels = { frame: 'Frame split → learned_bird_gru_frame.pt', '0.25s': '0.25 sec → learned_bird_gru_0.25s.pt', '0.5s': '0.5 sec → learned_bird_gru_0.5s.pt', '1s': '1 sec → learned_bird_gru_1s.pt', '2s': '2 sec → learned_bird_gru_2s.pt' };
+            const hint = splitLabels[_activeSplit] || `Auto → learned_bird_gru_${_activeSplit}.pt`;
+            document.getElementById('saveModelCurrentSplit').innerText = '📌 Current split: ' + hint;
+            document.getElementById('saveModelNameInput').value = '';
+            const modal = document.getElementById('saveModelModal');
+            modal.style.display = 'flex';
+            setTimeout(() => document.getElementById('saveModelNameInput').focus(), 80);
+        }
+
+        function closeSaveModelDialog() {
+            document.getElementById('saveModelModal').style.display = 'none';
+        }
+
+        async function confirmSaveModel() {
+            const rawName = document.getElementById('saveModelNameInput').value.trim();
+            const modelName = rawName || null;  // null = auto-name by split
+            closeSaveModelDialog();
+            try {
+                const res = await fetch('/api/learning/save_model', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model_name: modelName })
+                });
+                const data = await res.json();
+                if (data.status === 'saved') {
+                    showToast(`✅ Saved: ${data.model_name}  (${(data.total_samples || 0).toLocaleString()} samples)`, 5000);
+                    // Refresh dropdown and auto-select the just-saved model
+                    await loadAvailableModels();
+                    const sel = document.getElementById('modelCheckpointSelect');
+                    if (sel && data.model_name) {
+                        sel.value = data.model_name;
+                        isAutoModel = false;
+                    }
+                    document.getElementById('activeModelBadge').innerText = `Active: ${data.model_name} (${(data.total_samples||0).toLocaleString()} samples)`;
+                } else {
+                    showToast('❌ Save failed: ' + (data.message || 'Unknown error'));
+                }
+            } catch (e) {
+                showToast('❌ Save error: ' + e.message);
+            }
+        }
+
+        async function saveTrainedModel() {
+            openSaveModelDialog();
+        }
+
+        async function saveModelCheckpoint() {
+            openSaveModelDialog();
+        }
+
+        // Local downloaded videos dropdown loader
+        async function loadLocalVideos() {
+            try {
+                const res = await fetch("/api/local_videos");
+                const data = await res.json();
+                const sel = document.getElementById("localVideoSelect");
+                if (!sel) return;
+                sel.innerHTML = '<option value="">-- Or Pick Downloaded Video on PC --</option>';
+
+                if (data.videos && data.videos.length > 0) {
+                    data.videos.forEach(v => {
+                        const opt = document.createElement("option");
+                        opt.value = v.path;
+                        opt.innerText = `${v.name} (${v.size_mb} MB)`;
+                        sel.appendChild(opt);
+                    });
+                }
+            } catch (e) {}
+        }
+
+        function pickLocalVideo(path) {
+            if (path) {
+                document.getElementById("videoUrl").value = path;
+                showToast("Selected downloaded video: " + path.split("\\").pop().split("/").pop());
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            loadLocalVideos();
+            loadAvailableModels();
+        });
+
+        function showToast(msg, durationMs) {
+            const t = document.getElementById("toast");
+            t.innerText = msg;
+            t.style.opacity = "1";
+            setTimeout(() => { t.style.opacity = "0"; }, durationMs || 3500);
+        }
+
+        async function fetchStats() {
+            try {
+                const res = await fetch("/api/learning/stats");
+                const data = await res.json();
+
+                document.getElementById("valFps").innerText = data.fps || "0.0";
+                document.getElementById("valBirds").innerText = data.active_birds || "0";
+                document.getElementById("valLoss").innerText = data.loss ? data.loss.toFixed(4) : "0.0000";
+                document.getElementById("valSamples").innerText = (data.total_samples || 0).toLocaleString();
+                document.getElementById("valAde").innerText = data.ade_20 ? data.ade_20.toFixed(4) : "0.0000";
+                document.getElementById("valFde").innerText = data.fde_20 ? data.fde_20.toFixed(4) : "0.0000";
+                document.getElementById("valFrames").innerText = data.frame_count || "0";
+                document.getElementById("deviceBadge").innerText = "Device: " + (data.device || "CPU").toUpperCase();
+                if (data.active_model) {
+                    const badge = document.getElementById("activeModelBadge");
+                    if (badge) badge.innerText = `Active: ${data.active_model} (${(data.total_samples || 0).toLocaleString()} samples)`;
+                }
+
+                const h = data.prediction_horizon || 20;
+                const adeLbl = document.getElementById("lblAde");
+                const fdeLbl = document.getElementById("lblFde");
+                if (adeLbl) adeLbl.innerText = `ADE @ ${h} STEPS`;
+                if (fdeLbl) fdeLbl.innerText = `FDE @ ${h} STEPS`;
+
+                // Compute Running Session Averages without disturbing backend
+                if (data.total_samples > 0 && data.total_samples !== lastSamplesLearned) {
+                    lastSamplesLearned = data.total_samples;
+
+                    if (lossCount === 0 && data.loss_history && data.loss_history.length > 0) {
+                        data.loss_history.forEach(v => { lossSum += v; lossCount++; });
+                    } else if (typeof data.loss === "number" && !isNaN(data.loss)) {
+                        lossSum += data.loss;
+                        lossCount++;
+                    }
+
+                    if (adeCount === 0 && data.ade_history && data.ade_history.length > 0) {
+                        data.ade_history.forEach(v => { adeSum += v; adeCount++; });
+                    } else if (typeof data.ade_20 === "number" && !isNaN(data.ade_20) && data.ade_20 > 0) {
+                        adeSum += data.ade_20;
+                        adeCount++;
+                    }
+
+                    if (typeof data.fde_20 === "number" && !isNaN(data.fde_20) && data.fde_20 > 0) {
+                        fdeSum += data.fde_20;
+                        fdeCount++;
+                    }
+                }
+
+                const avgLoss = lossCount > 0 ? (lossSum / lossCount).toFixed(4) : (data.loss ? data.loss.toFixed(4) : "0.0000");
+                const avgAde = adeCount > 0 ? (adeSum / adeCount).toFixed(4) : (data.ade_20 ? data.ade_20.toFixed(4) : "0.0000");
+                const avgFde = fdeCount > 0 ? (fdeSum / fdeCount).toFixed(4) : (data.fde_20 ? data.fde_20.toFixed(4) : "0.0000");
+
+                const elAvgLoss = document.getElementById("valAvgLoss");
+                const elAvgAde = document.getElementById("valAvgAde");
+                const elAvgFde = document.getElementById("valAvgFde");
+
+                if (elAvgLoss) elAvgLoss.innerText = avgLoss;
+                if (elAvgAde) elAvgAde.innerText = avgAde;
+                if (elAvgFde) elAvgFde.innerText = avgFde;
+
+                // Update Drone Anti-Bird Evasion Telemetry & Simulation Log
+                if (data.drone_evasion) {
+                    updateDroneEvasionTelemetry(data.drone_evasion);
+                }
+
+                // Sync bird selector for trajectory comparison plot
+                if (data.birds && data.birds.length > 0) {
+                    const plotSel = document.getElementById("plotBirdSelect");
+                    if (plotSel) {
+                        const existingVal = plotSel.value;
+                        const currentOpts = Array.from(plotSel.options).map(o => o.value);
+                        const newIds = data.birds.map(b => String(b.id));
+                        if (newIds.join(",") !== currentOpts.join(",")) {
+                            plotSel.innerHTML = data.birds.map(b => `<option value="${b.id}" ${String(b.id) === String(currentLearningPlotBirdId) ? 'selected' : ''}>Bird #${b.id} (${b.speed} px/f)</option>`).join("");
+                        }
+                    }
+                    if (!learningPlotInitialized && data.birds.length > 0) {
+                        learningPlotInitialized = true;
+                        currentLearningPlotBirdId = data.birds[0].id;
+                        updateLearningBirdPlot();
+                    }
+                }
+            } catch (e) {}
+        }
+
+        let currentLearningPlotBirdId = 1;
+        let learningPlotInitialized = false;
+
+        async function updateLearningBirdPlot() {
+            const sel = document.getElementById("plotBirdSelect");
+            const birdId = sel ? (parseInt(sel.value) || currentLearningPlotBirdId) : currentLearningPlotBirdId;
+            currentLearningPlotBirdId = birdId;
+            const img = document.getElementById("birdPlotImg");
+            const ph = document.getElementById("plotPlaceholder");
+            if (!img) return;
+            img.src = `/api/learning/bird_plot_image/${birdId}?t=${Date.now()}`;
+            img.onload = () => {
+                img.style.display = "block";
+                if (ph) ph.style.display = "none";
+            };
+            img.onerror = () => {
+                img.style.display = "none";
+                if (ph) ph.style.display = "block";
+            };
+        }
+
+        // Auto-refresh trajectory plot every 3 seconds while stream is active
+        setInterval(() => {
+            if (document.getElementById("streamImg") && document.getElementById("streamImg").style.display !== "none") {
+                updateLearningBirdPlot();
+            }
+        }, 3000);
+
+        // ── DRONE ANTI-BIRD ATTACK EVASION & DISPATCH LOG (SIMULATION) ───────
+        let droneLogHistory = [];
+        let lastDroneLogTime = 0;
+
+        function updateDroneEvasionTelemetry(droneData) {
+            if (!droneData) return;
+            const threats = droneData.threats || [];
+            const countEl = document.getElementById("droneThreatsCount");
+            const statusEl = document.getElementById("droneThreatStatus");
+            const radEl = document.getElementById("droneKeepoutRadius");
+            const clearEl = document.getElementById("droneKeepoutClearance");
+            const escEl = document.getElementById("droneEscapeVector");
+            const actEl = document.getElementById("droneEscapeAction");
+            const consoleEl = document.getElementById("droneLogConsole");
+
+            if (threats.length === 0) {
+                if (countEl) countEl.innerText = "0 Threats";
+                if (statusEl) statusEl.innerText = "Airspace clear (Nominal Flight)";
+                if (radEl) radEl.innerText = "0.0 px";
+                if (clearEl) clearEl.innerText = "No keep-out zone active";
+                if (escEl) escEl.innerText = "STANDBY";
+                if (actEl) actEl.innerText = "No evasion required";
+                return;
+            }
+
+            const t = threats[0];
+            if (countEl) countEl.innerText = `${threats.length} Threat${threats.length > 1 ? 's' : ''} Tracked`;
+            if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">⚠️ ${t.threat_level}</span> (TCPA: ${t.time_to_intercept_sec}s)`;
+            if (radEl) radEl.innerText = `${t.tunnel_keepout.tube_radius_px} px`;
+            if (clearEl) clearEl.innerText = `Keep-Out Clearance: ${t.tunnel_keepout.airspace_clearance_px} px`;
+            if (escEl) escEl.innerText = `HEADING ${t.evasion_heading_deg}° [dx:${t.evasion_vector.dx}, dy:${t.evasion_vector.dy}]`;
+            if (actEl) actEl.innerText = `${t.evasion_maneuver} • Throttle: ${t.recommended_throttle_pct}%`;
+
+            // Append to log console (throttled to ~1 entry every 800ms)
+            const now = Date.now();
+            if (now - lastDroneLogTime < 800) return;
+            lastDroneLogTime = now;
+
+            threats.forEach(th => {
+                const ms = th.predicted_milestones || {};
+                const p05 = ms["0.5s"] ? `(${ms["0.5s"].x}, ${ms["0.5s"].y})` : "N/A";
+                const p1  = ms["1.0s"] ? `(${ms["1.0s"].x}, ${ms["1.0s"].y})` : "N/A";
+                const p2  = ms["2.0s"] ? `(${ms["2.0s"].x}, ${ms["2.0s"].y})` : "N/A";
+                const p3  = ms["3.0s"] ? `(${ms["3.0s"].x}, ${ms["3.0s"].y})` : "N/A";
+                const p4  = ms["4.0s"] ? `(${ms["4.0s"].x}, ${ms["4.0s"].y})` : "N/A";
+
+                const logItem = {
+                    timestamp: droneData.timestamp || new Date().toISOString().substring(11, 23),
+                    bird_id: th.bird_id,
+                    actual_coords: th.actual_coords,
+                    speed_px_f: th.speed_px_f,
+                    speed_px_sec: th.speed_px_sec,
+                    heading_deg: th.heading_deg,
+                    predicted_milestones: th.predicted_milestones,
+                    tunnel_keepout: th.tunnel_keepout,
+                    threat_level: th.threat_level,
+                    evasion_vector: th.evasion_vector,
+                    evasion_heading_deg: th.evasion_heading_deg,
+                    evasion_target_point: th.evasion_target_point,
+                    evasion_maneuver: th.evasion_maneuver,
+                    recommended_throttle_pct: th.recommended_throttle_pct,
+                    time_to_intercept_sec: th.time_to_intercept_sec,
+                    simulated_mavlink_packet: th.simulated_mavlink_packet
+                };
+                droneLogHistory.push(logItem);
+                if (droneLogHistory.length > 120) droneLogHistory.shift();
+
+                if (consoleEl) {
+                    const entryDiv = document.createElement("div");
+                    entryDiv.style.marginBottom = "8px";
+                    entryDiv.style.borderBottom = "1px solid #111827";
+                    entryDiv.style.paddingBottom = "6px";
+                    entryDiv.innerHTML = `
+                        <div style="color: #fbbf24; font-weight: 700;">
+                            [${logItem.timestamp}] ⚠️ <span style="color:#ef4444;">THREAT INTERCEPT ALERT:</span> BIRD #${th.bird_id} (${th.threat_level}) • TCPA: <span style="color:#38bdf8;">${th.time_to_intercept_sec}s</span>
+                        </div>
+                        <div style="color: #cbd5e1; margin-left: 14px;">
+                            ├─ <span style="color: #e2e8f0; font-weight: 600;">Actual Coordinates:</span> X: <span style="color:#f472b6;">${th.actual_coords.x}</span>, Y: <span style="color:#f472b6;">${th.actual_coords.y}</span> | Spd: <span style="color:#facc15;">${th.speed_px_f} px/f</span> (${th.speed_px_sec} px/s) | Heading: <span style="color:#facc15;">${th.heading_deg}°</span><br>
+                            ├─ <span style="color: #e2e8f0; font-weight: 600;">Predicted Milestones:</span> +0.5s: <span style="color:#4ade80;">${p05}</span> | +1.0s: <span style="color:#4ade80;">${p1}</span> | +2.0s: <span style="color:#4ade80;">${p2}</span> | +3.0s: <span style="color:#4ade80;">${p3}</span> | +4.0s: <span style="color:#4ade80;">${p4}</span><br>
+                            ├─ <span style="color: #e2e8f0; font-weight: 600;">3D Cylinder Tunnel:</span> Base Rad: <span style="color:#38bdf8;">${th.tunnel_keepout.base_radius_px}px</span> | Tube Radius: <span style="color:#38bdf8;">${th.tunnel_keepout.tube_radius_px}px</span> | Keep-Out Margin: <span style="color:#a78bfa;">${th.tunnel_keepout.airspace_clearance_px}px</span><br>
+                            ├─ <span style="color: #4ade80; font-weight: 700;">Drone Escape Command:</span> <span style="color:#4ade80;">${th.evasion_maneuver}</span> -> Heading: <span style="color:#22d3ee;">${th.evasion_heading_deg}°</span> (Vector: dx:${th.evasion_vector.dx}, dy:${th.evasion_vector.dy}) | Throttle: <span style="color:#facc15;">${th.recommended_throttle_pct}%</span><br>
+                            └─ <span style="color: #94a3b8; font-weight: 600;">Simulated Dispatch:</span> MAVLink #147 [TRAJECTORY_WAYPOINTS] -> DRONE-01 Target(${th.evasion_target_point.x}, ${th.evasion_target_point.y}, +15m) • <span style="color:#ef4444; font-weight:700;">[SIMULATION ONLY • NO ACTUAL RF TRANSMISSION]</span>
+                        </div>
+                    `;
+                    consoleEl.appendChild(entryDiv);
+
+                    const autoScroll = document.getElementById("droneLogAutoScroll");
+                    if (autoScroll && autoScroll.checked) {
+                        consoleEl.scrollTop = consoleEl.scrollHeight;
+                    }
+                }
+            });
+        }
+
+        function clearDroneLog() {
+            droneLogHistory = [];
+            const consoleEl = document.getElementById("droneLogConsole");
+            if (consoleEl) {
+                consoleEl.innerHTML = '<div style="color: #64748b; font-style: italic;">[CONSOLE CLEARED] Drone Anti-Bird Collision Avoidance Logging cleared. Awaiting new flight telemetry...</div>';
+            }
+        }
+
+        function exportDroneLog() {
+            if (droneLogHistory.length === 0) {
+                showToast("No drone evasion telemetry in buffer to export.");
+                return;
+            }
+            const blob = new Blob([JSON.stringify(droneLogHistory, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `drone_bird_evasion_log_${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("Exported drone anti-bird evasion log JSON!");
+        }
+
+        // Poll stats every 500ms
+        statsInterval = setInterval(fetchStats, 500);
+    </script>
+</body>
+</html>

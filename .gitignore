@@ -1,0 +1,52 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Caches and testing
+.pytest_cache/
+.coverage
+htmlcov/
+.cache
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Android & Gradle
+android/.gradle/
+.gradle/
+android/app/build/
+build/
+android/local.properties
+local.properties
+*.apk
+*.aab
+
+# Large Media & Video Downloads
+downloads/
+computer learning/downloads/
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+
+# Large Archive Backups
+backup_birdpath_project.zip
+*.zip
+*.tar.gz
+*.rar
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db

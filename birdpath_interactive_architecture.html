@@ -1,0 +1,2921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BirdPath AI — Interactive Architecture & Deep Learning System Explorer</title>
+  <style>
+    :root {
+      --bg-primary: #070a13;
+      --bg-secondary: #0c1220;
+      --bg-card: rgba(15, 23, 42, 0.85);
+      --bg-card-hover: rgba(26, 38, 66, 0.95);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      
+      --neon-cyan: #00f2fe;
+      --neon-blue: #38bdf8;
+      --neon-purple: #a855f7;
+      --neon-pink: #ec4899;
+      --neon-green: #10b981;
+      --neon-amber: #f59e0b;
+      --neon-red: #ef4444;
+      --neon-violet: #8b5cf6;
+      --neon-teal: #14b8a6;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --font-mono: "JetBrains Mono", "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg-primary);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Ambient background grid */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.07) 0%, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Main Container */
+    .app-container {
+      position: relative;
+      z-index: 1;
+      max-width: 1720px;
+      margin: 0 auto;
+      padding: 20px 24px 80px;
+    }
+
+    /* Header Bar */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      backdrop-filter: blur(18px);
+      box-shadow: 0 10px 36px rgba(0, 0, 0, 0.5);
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 46px;
+      height: 46px;
+      background: linear-gradient(135deg, #00f2fe, #a855f7);
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 24px rgba(0, 242, 254, 0.45);
+      animation: pulseGlow 3s infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+      from { box-shadow: 0 0 16px rgba(0, 242, 254, 0.35); }
+      to { box-shadow: 0 0 32px rgba(168, 85, 247, 0.65); }
+    }
+
+    .brand-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(90deg, #fff 20%, #38bdf8 60%, #a855f7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-subtitle {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      letter-spacing: 0.05em;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 999px;
+      font-size: 0.76rem;
+      color: #34d399;
+      font-family: var(--font-mono);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+      animation: pulseDot 1.5s infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 16px rgba(0, 242, 254, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0284c7, #7c3aed);
+      border: none;
+      box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #0369a1, #6d28d9);
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
+    }
+
+    /* Tab Navigation */
+    .tabs-nav {
+      display: flex;
+      gap: 8px;
+      background: var(--bg-card);
+      padding: 6px;
+      border-radius: 16px;
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 24px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tabs-nav::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      padding: 11px 20px;
+      border-radius: 12px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      color: #fff;
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(168, 85, 247, 0.25));
+      border: 1px solid rgba(0, 242, 254, 0.4);
+      box-shadow: 0 4px 18px rgba(0, 242, 254, 0.22);
+    }
+
+    /* Search & Filter Bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 10px 18px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 6px 14px;
+      color: #fff;
+      font-size: 0.82rem;
+      font-family: var(--font-sans);
+      outline: none;
+      min-width: 260px;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus {
+      border-color: var(--neon-cyan);
+    }
+
+    .filter-tag {
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 0.74rem;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-tag:hover, .filter-tag.active {
+      background: rgba(0, 242, 254, 0.15);
+      border-color: rgba(0, 242, 254, 0.4);
+      color: var(--neon-cyan);
+    }
+
+    /* Tab Content Views */
+    .tab-view {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    .tab-view.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Architecture Layers System (Overview) */
+    .layers-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .layer-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 22px;
+      position: relative;
+      transition: all 0.25s ease;
+      backdrop-filter: blur(14px);
+    }
+    .layer-card:hover {
+      border-color: var(--layer-accent, var(--neon-cyan));
+      box-shadow: 0 10px 36px rgba(0, 0, 0, 0.45), 0 0 28px rgba(var(--layer-rgb, 0, 242, 254), 0.15);
+      transform: translateY(-2px);
+    }
+
+    .layer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .layer-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .layer-badge {
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(var(--layer-rgb, 0, 242, 254), 0.15);
+      color: var(--layer-accent, var(--neon-cyan));
+      border: 1px solid rgba(var(--layer-rgb, 0, 242, 254), 0.35);
+    }
+
+    .layer-title {
+      font-size: 1.18rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .layer-desc {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+    }
+
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .module-card {
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .module-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 3px;
+      background: var(--layer-accent, var(--neon-cyan));
+      opacity: 0.6;
+      transition: width 0.2s;
+    }
+
+    .module-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+    }
+    .module-card:hover::before {
+      width: 6px;
+      opacity: 1;
+    }
+
+    .module-name {
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .module-role {
+      font-size: 0.79rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+
+    .module-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-dim);
+    }
+    .tag-highlight {
+      background: rgba(0, 242, 254, 0.12);
+      color: var(--neon-cyan);
+    }
+
+    /* Modal / Inspector Drawer */
+    .inspector-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .inspector-overlay.open {
+      display: flex;
+    }
+
+    .inspector-modal {
+      background: #0d1527;
+      border: 1px solid rgba(0, 242, 254, 0.4);
+      border-radius: 20px;
+      max-width: 880px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 242, 254, 0.2);
+      position: relative;
+      animation: modalScale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalScale {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .inspector-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      position: sticky;
+      top: 0;
+      background: rgba(13, 21, 39, 0.95);
+      backdrop-filter: blur(14px);
+      z-index: 2;
+    }
+
+    .close-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1.25rem;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: background 0.2s;
+    }
+    .close-btn:hover { background: rgba(239, 68, 68, 0.35); }
+
+    .inspector-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .code-box {
+      background: #060913;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-family: var(--font-mono);
+      font-size: 0.81rem;
+      color: #38bdf8;
+      overflow-x: auto;
+      line-height: 1.55;
+    }
+
+    /* DATA FLOW VIEW STYLES */
+    .data-flow-container {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Interactive Visual Diagram (SVG Flow Stage) */
+    .svg-flow-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 20px;
+      backdrop-filter: blur(14px);
+      overflow-x: auto;
+    }
+
+    .svg-flow-card svg {
+      display: block;
+      margin: 0 auto;
+    }
+
+    .pipeline-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      padding: 14px 20px;
+      border-radius: 16px;
+      border: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .step-counter {
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      color: var(--neon-cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .flow-scrubber {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      max-width: 100%;
+      padding-bottom: 4px;
+    }
+
+    .scrub-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .scrub-pill:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .scrub-pill.active {
+      background: linear-gradient(135deg, #00f2fe, #7c3aed);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 0 14px rgba(0, 242, 254, 0.45);
+    }
+
+    /* Pipeline Step Cards Sequence */
+    .pipeline-cards-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+    }
+
+    /* Connecting flow spine */
+    .flow-spine {
+      position: absolute;
+      left: 38px;
+      top: 30px;
+      bottom: 30px;
+      width: 3px;
+      background: linear-gradient(180deg, 
+        #00f2fe 0%, 
+        #38bdf8 20%, 
+        #10b981 40%, 
+        #a855f7 65%, 
+        #f59e0b 85%, 
+        #ef4444 100%
+      );
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    .step-node-card {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 76px 1fr 300px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 20px;
+      gap: 20px;
+      align-items: center;
+      transition: all 0.25s ease;
+      backdrop-filter: blur(14px);
+      cursor: pointer;
+    }
+
+    @media (max-width: 992px) {
+      .step-node-card {
+        grid-template-columns: 60px 1fr;
+      }
+      .payload-badge-box {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .step-node-card:hover, .step-node-card.highlighted {
+      border-color: var(--step-color, var(--neon-cyan));
+      background: var(--bg-card-hover);
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.45), 0 0 24px rgba(var(--step-rgb, 0, 242, 254), 0.22);
+      transform: translateX(4px);
+    }
+
+    .step-number-circle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      border: 2px solid var(--step-color, var(--neon-cyan));
+      display: grid;
+      place-items: center;
+      font-size: 1.15rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--step-color, var(--neon-cyan));
+      box-shadow: 0 0 16px rgba(var(--step-rgb, 0, 242, 254), 0.35);
+      position: relative;
+    }
+
+    .step-number-circle::after {
+      content: '';
+      position: absolute;
+      inset: -5px;
+      border-radius: 50%;
+      border: 1px dashed var(--step-color, var(--neon-cyan));
+      animation: rotateRing 14s linear infinite;
+      opacity: 0.55;
+    }
+
+    @keyframes rotateRing {
+      to { transform: rotate(360deg); }
+    }
+
+    .step-content-main h4 {
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 5px;
+      flex-wrap: wrap;
+    }
+
+    .step-action-tag {
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(var(--step-rgb, 0, 242, 254), 0.15);
+      color: var(--step-color, var(--neon-cyan));
+      border: 1px solid rgba(var(--step-rgb, 0, 242, 254), 0.3);
+    }
+
+    .step-content-main p {
+      font-size: 0.83rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .step-math-pill {
+      margin-top: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      color: var(--neon-blue);
+      background: rgba(56, 189, 248, 0.08);
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .payload-badge-box {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+
+    .payload-header {
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .payload-val {
+      font-family: var(--font-mono);
+      font-size: 0.81rem;
+      font-weight: 700;
+      color: #38bdf8;
+      word-break: break-all;
+    }
+
+    .payload-dest {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* WORKFLOW & DECISION VIEW */
+    .flowchart-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 26px;
+      overflow-x: auto;
+    }
+
+    .tree-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .decision-diamond {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(239, 68, 68, 0.15));
+      border: 2px solid #f59e0b;
+      border-radius: 14px;
+      padding: 14px 22px;
+      text-align: center;
+      max-width: 480px;
+      box-shadow: 0 0 24px rgba(245, 158, 11, 0.22);
+    }
+
+    .decision-title {
+      font-weight: 700;
+      color: #fbbf24;
+      font-size: 0.96rem;
+      margin-bottom: 4px;
+    }
+
+    .decision-branches {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      width: 100%;
+      max-width: 820px;
+    }
+
+    .branch-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 16px 18px;
+    }
+    .branch-success {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.06);
+    }
+    .branch-failure {
+      border-color: rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.06);
+    }
+
+    /* FUNCTIONS & CALL HIERARCHY */
+    .function-table-wrap {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    .func-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      text-align: left;
+    }
+
+    .func-table th {
+      background: rgba(0, 0, 0, 0.35);
+      padding: 14px 18px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      border-bottom: 1px solid var(--border-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .func-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: top;
+    }
+
+    .func-table tr:hover td {
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .func-name {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    .func-module {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    .func-sig {
+      font-family: var(--font-mono);
+      color: #a855f7;
+      font-size: 0.76rem;
+      background: rgba(168, 85, 247, 0.08);
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    /* FEATURES MAP GRID */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+      gap: 18px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .feature-card:hover {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .feature-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .feature-badge-core {
+      background: rgba(0, 242, 254, 0.15);
+      border: 1px solid rgba(0, 242, 254, 0.4);
+      color: var(--neon-cyan);
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      font-weight: 800;
+    }
+
+    .feature-badge-opt {
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      color: var(--neon-purple);
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      font-weight: 800;
+    }
+
+    .feature-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .feature-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 14px;
+    }
+
+    .feature-link-list {
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 12px;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    /* EXTERNAL & INFRASTRUCTURE VIEW */
+    .infra-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+    }
+
+    .infra-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 24px;
+    }
+
+    .infra-title {
+      font-size: 1.12rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .param-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .param-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .param-key {
+      font-size: 0.81rem;
+      color: var(--text-muted);
+    }
+
+    .param-val {
+      font-family: var(--font-mono);
+      font-size: 0.81rem;
+      font-weight: 600;
+      color: #38bdf8;
+    }
+
+    /* Animated SVG Flowlines */
+    .flow-line {
+      stroke-dasharray: 6, 6;
+      animation: svgFlow 1.2s linear infinite;
+    }
+    @keyframes svgFlow {
+      from { stroke-dashoffset: 24; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .app-container { padding: 12px 14px 60px; }
+      header { flex-direction: column; align-items: flex-start; }
+      .decision-branches { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+
+  <div class="app-container">
+    <!-- Top Header -->
+    <header>
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+            <path d="M12 12v9"/>
+            <path d="m8 17 4 4 4-4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">BIRDPATH AI ARCHITECTURE EXPLORER</div>
+          <div class="brand-subtitle">DEEP LEARNING FLIGHT TRAJECTORY FORECASTING & DRONE EVASION PIPELINE</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="status-badge">
+          <div class="status-dot"></div>
+          <span>EDGE GPU & JETSON READY</span>
+        </div>
+        <button class="btn" onclick="toggleFlowAnimation()" id="animToggleBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span id="animBtnText">Pause Flow</span>
+        </button>
+        <button class="btn btn-primary" onclick="showQuickSummary()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          System Quick Spec
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('overview')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        1. System Overview (6 Layers)
+      </button>
+      <button class="tab-btn" onclick="switchTab('dataflow')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        2. Data Flow Pipeline (10 Steps)
+      </button>
+      <button class="tab-btn" onclick="switchTab('workflow')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M6 9v12"/></svg>
+        3. Workflow & Decision Gates
+      </button>
+      <button class="tab-btn" onclick="switchTab('functions')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        4. Functions & Call Hierarchy
+      </button>
+      <button class="tab-btn" onclick="switchTab('features')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        5. Features Matrix (Core vs Opt)
+      </button>
+      <button class="tab-btn" onclick="switchTab('infra')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+        6. External & Robotics Infra
+      </button>
+    </nav>
+
+    <!-- Global Search & Tag Filter -->
+    <div class="filter-bar">
+      <span style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">EXPLORE ARCHITECTURE:</span>
+      <input type="text" class="search-input" id="globalSearch" placeholder="Search module, function, or concept (e.g. GRU, Kalman, NLL)..." oninput="handleSearch(this.value)">
+      <span class="filter-tag active" onclick="applyTagFilter('all')">All</span>
+      <span class="filter-tag" onclick="applyTagFilter('Deep Learning')">Deep Learning</span>
+      <span class="filter-tag" onclick="applyTagFilter('Tracking')">Tracking & MOT</span>
+      <span class="filter-tag" onclick="applyTagFilter('Android')">Android Edge</span>
+      <span class="filter-tag" onclick="applyTagFilter('Robotics')">Evasion & MAVLink</span>
+      <span class="filter-tag" onclick="applyTagFilter('Vision')">Computer Vision</span>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 1: SYSTEM OVERVIEW (ALL 6 LAYERS)                             -->
+    <!-- ================================================================= -->
+    <div id="tab-overview" class="tab-view active">
+      <div class="layers-stack">
+
+        <!-- LAYER 1: UI & VISUALIZATION -->
+        <div class="layer-card" data-category="Android Vision" style="--layer-accent: #00f2fe; --layer-rgb: 0, 242, 254;">
+          <div class="layer-header">
+            <div class="layer-title-group">
+              <span class="layer-badge">Layer 1</span>
+              <div>
+                <h3 class="layer-title">UI, HUD & Visual Composition Layer</h3>
+                <p class="layer-desc">Hardware-accelerated mobile overlays, web telemetry dashboards, 3D corridor rendering & stereoscopic VR cockpit</p>
+              </div>
+            </div>
+            <span class="tag tag-highlight">60 FPS Hardware-Accelerated</span>
+          </div>
+
+          <div class="modules-grid">
+            <div class="module-card" onclick="openInspector('OverlayView')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00f2fe" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                OverlayView.kt
+              </div>
+              <div class="module-role">Android custom surface view; paints 3 transparent layers (video preview, detection bounding boxes, C1 trajectory splines).</div>
+              <div class="module-tags">
+                <span class="tag">Android Canvas</span>
+                <span class="tag">Alpha Fading</span>
+                <span class="tag">500ms Lost Cache</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('CoordinateMapper')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00f2fe" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                CoordinateMapper.kt
+              </div>
+              <div class="module-role">Projects normalized model coordinates (640x640) onto mobile display; handles FILL_CENTER crop and 0/90/270° sensor rotations.</div>
+              <div class="module-tags">
+                <span class="tag">Matrix Transform</span>
+                <span class="tag">Aspect Un-pad</span>
+                <span class="tag">Zero Allocation</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('LayerVisualizer')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00f2fe" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+                LayerVisualizer (visualizer.py)
+              </div>
+              <div class="module-role">Composites 7 independent visual layers: video, boxes, actual trails, forecast splines, 3D glow cylinders, rib rings, telemetry inset.</div>
+              <div class="module-tags">
+                <span class="tag">7 Modular Toggles</span>
+                <span class="tag">3D Cylinder Tube</span>
+                <span class="tag">220x110 HUD Inset</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('DroneVR')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00f2fe" stroke-width="2"><path d="M2 12h20"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"/></svg>
+                VR SBS & Cockpit HUD
+              </div>
+              <div class="module-role">Generates stereoscopic Side-by-Side (SBS) dual-eye video stream with IPD disparity (14px) and pitch/roll artificial horizon ladder.</div>
+              <div class="module-tags">
+                <span class="tag">FatShark / DJI VR</span>
+                <span class="tag">IPD Vignette</span>
+                <span class="tag">±10° Pitch Ladder</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LAYER 2: API & INGESTION -->
+        <div class="layer-card" data-category="Vision" style="--layer-accent: #f59e0b; --layer-rgb: 245, 158, 11;">
+          <div class="layer-header">
+            <div class="layer-title-group">
+              <span class="layer-badge">Layer 2</span>
+              <div>
+                <h3 class="layer-title">API, Video Ingestion & Streaming Server Layer</h3>
+                <p class="layer-desc">Async REST routes, WebSockets telemetry, high-throughput MJPEG multi-stream, and YouTube video stream resolver</p>
+              </div>
+            </div>
+            <span class="tag">FastAPI / Uvicorn (Port 8000)</span>
+          </div>
+
+          <div class="modules-grid">
+            <div class="module-card" onclick="openInspector('ServerFastAPI')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                FastAPI Gateway (server.py)
+              </div>
+              <div class="module-role">Hosts 40+ REST endpoints and WebSocket channels for session control, real-time telemetry, model checkpoints, and layer switching.</div>
+              <div class="module-tags">
+                <span class="tag">Async Worker</span>
+                <span class="tag">WebSocket Telemetry</span>
+                <span class="tag">CORS Enabled</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('StudioSession')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/></svg>
+                StudioSession Coordinator
+              </div>
+              <div class="module-role">Encapsulates stateful video pipeline workers; controls OpenCV capture, throttles 30 FPS MJPEG encoding, and aggregates ADE/FDE metrics.</div>
+              <div class="module-tags">
+                <span class="tag">Dual Workspaces</span>
+                <span class="tag">MJPEG Multipart</span>
+                <span class="tag">Thread-Safe Buffers</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('YouTubeStreamLoader')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                YouTubeStreamLoader
+              </div>
+              <div class="module-role">Resolves live YouTube feeds & MP4 sources; manages local disk caching in /downloads/ to avoid redundant network bandwidth.</div>
+              <div class="module-tags">
+                <span class="tag">yt-dlp Engine</span>
+                <span class="tag">Local Cache Check</span>
+                <span class="tag">Format Validator</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('FrameSkipController')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                FrameSkipController.kt
+              </div>
+              <div class="module-role">Dynamic edge load balancer; skips compute-heavy YOLO inference when execution latency exceeds 50ms while sustaining 60Hz Kalman states.</div>
+              <div class="module-tags">
+                <span class="tag">Target 20+ FPS</span>
+                <span class="tag">Thermal Guard</span>
+                <span class="tag">Zero Frame Stall</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LAYER 3: DEEP LEARNING & COMPUTER VISION -->
+        <div class="layer-card" data-category="Deep Learning Vision" style="--layer-accent: #a855f7; --layer-rgb: 168, 85, 247;">
+          <div class="layer-header">
+            <div class="layer-title-group">
+              <span class="layer-badge">Layer 3</span>
+              <div>
+                <h3 class="layer-title">Deep Learning & Computer Vision Inference Engine</h3>
+                <p class="layer-desc">YOLOv8 single-class detector, SAHI sliced inference, 2-layer GRU sequence forecasting & online GPU backprop</p>
+              </div>
+            </div>
+            <span class="tag tag-highlight">PyTorch & TFLite GPU Delegate</span>
+          </div>
+
+          <div class="modules-grid">
+            <div class="module-card" onclick="openInspector('YOLOv8')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                YOLOv8n / YOLO11n Single-Class
+              </div>
+              <div class="module-role">Detects airborne bird targets from 640x640 letterboxed frames across 8,400 anchors. Evaluates candidate bounding boxes via greedy NMS.</div>
+              <div class="module-tags">
+                <span class="tag">Ultralytics YOLO</span>
+                <span class="tag">TFLite FP16</span>
+                <span class="tag">SAHI 2x2 Tiling</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('BirdTrajectoryGRU')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                BirdTrajectoryGRU (models_trajectory.py)
+              </div>
+              <div class="module-role">2-layer GRU (hidden=128) mapping past 15 frames [cx, cy, w, h, dx, dy] to 20 future steps of coordinates & log-variance uncertainty.</div>
+              <div class="module-tags">
+                <span class="tag">Heteroscedastic NLL</span>
+                <span class="tag">Smoothness Regularizer</span>
+                <span class="tag">ADE: 0.0399</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('TrajectoryTransformer')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+                BirdTrajectoryTransformer
+              </div>
+              <div class="module-role">Comparative research model; utilizes 4-head self-attention with sinusoidal positional encoding to benchmark non-local flight patterns.</div>
+              <div class="module-tags">
+                <span class="tag">Multi-Head Attention</span>
+                <span class="tag">Positional Encoding</span>
+                <span class="tag">Comparative Eval</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('OnlineTrajectoryTrainer')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                OnlineTrajectoryTrainer
+              </div>
+              <div class="module-role">Continuous learning engine; harvests ground-truth trajectories as future frames unfold and runs live GPU backprop with AdamW.</div>
+              <div class="module-tags">
+                <span class="tag">Online Backprop</span>
+                <span class="tag">AdamW (lr=1e-4)</span>
+                <span class="tag">L2 Grad Clip 1.0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LAYER 4: TRACKING & KINEMATICS -->
+        <div class="layer-card" data-category="Tracking Deep Learning" style="--layer-accent: #10b981; --layer-rgb: 16, 185, 129;">
+          <div class="layer-header">
+            <div class="layer-title-group">
+              <span class="layer-badge">Layer 4</span>
+              <div>
+                <h3 class="layer-title">Tracking, Kinematics & Ego-Motion Compensation</h3>
+                <p class="layer-desc">8-state Kalman filtering, ByteTrack two-stage Hungarian association, wing-flap decoupling & gyro stabilization</p>
+              </div>
+            </div>
+            <span class="tag">Sub-millisecond Real-Time Kinematics</span>
+          </div>
+
+          <div class="modules-grid">
+            <div class="module-card" onclick="openInspector('ByteTracker')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+                ByteTracker (tracker.py / ByteTracker.kt)
+              </div>
+              <div class="module-role">Two-stage association: matches high-confidence detections (≥0.50) in stage 1, and saves weak detections (0.10–0.50) in stage 2 to prevent track loss.</div>
+              <div class="module-tags">
+                <span class="tag">Hungarian IoU</span>
+                <span class="tag">Distance Gating</span>
+                <span class="tag">90-Frame Persistence</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('KalmanFilter')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                8-State Linear Kalman Filter
+              </div>
+              <div class="module-role">Tracks state [cx, cy, w, h, vx, vy, vw, vh]ᵀ with constant velocity dynamics; updates state and covariance P via analytical 4x4 matrix inversion.</div>
+              <div class="module-tags">
+                <span class="tag">8D State Vector</span>
+                <span class="tag">Covariance Tracking</span>
+                <span class="tag">Occlusion Bridge</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('AlphaBetaFilter')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                CoM Flap Decoupler (α-β Filter)
+              </div>
+              <div class="module-role">Decouples vertical wing-flapping bounding box jitter from steady aerodynamic flight trajectory using α=0.28, β=0.04.</div>
+              <div class="module-tags">
+                <span class="tag">89.4% Jitter Reduction</span>
+                <span class="tag">EMA BBox Damping</span>
+                <span class="tag">Physical CoM</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('MotionCompensation')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+                Ego-Motion Compensator
+              </div>
+              <div class="module-role">Removes drone camera or handheld phone movement from tracks via Lucas-Kanade optical flow (server) or 3-axis Gyroscope fusion (Android).</div>
+              <div class="module-tags">
+                <span class="tag">RANSAC Affine</span>
+                <span class="tag">Gyroscope (ωx, ωy)</span>
+                <span class="tag">Frame Coordinate Warp</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LAYER 5: ROBOTICS & DRONE EVASION -->
+        <div class="layer-card" data-category="Robotics" style="--layer-accent: #ef4444; --layer-rgb: 239, 68, 68;">
+          <div class="layer-header">
+            <div class="layer-title-group">
+              <span class="layer-badge">Layer 5</span>
+              <div>
+                <h3 class="layer-title">Autonomous Drone Evasion & Robotics Dispatch</h3>
+                <p class="layer-desc">Time-to-collision solvers, 3D cylindrical keep-out tunnels, 90° escape break vectors & MAVLink autopilot integration</p>
+              </div>
+            </div>
+            <span class="tag tag-highlight">MAVLink v2.0 Protocol</span>
+          </div>
+
+          <div class="modules-grid">
+            <div class="module-card" onclick="openInspector('TCPASolver')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                TCPA & Threat Collision Solver
+              </div>
+              <div class="module-role">Computes Time-to-Closest-Point-of-Approach (TCPA = -(r·v)/|v|²); classifies collision hazards when D ≤ 50m and TCPA ≤ 2.5s.</div>
+              <div class="module-tags">
+                <span class="tag">TCPA Countdown</span>
+                <span class="tag">Closure Velocity</span>
+                <span class="tag">Collision Alert</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('EvasionVector')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg>
+                Orthogonal Break Maneuver
+              </div>
+              <div class="module-role">Calculates optimal UAV escape vector perpendicular to target flight path (90° break) combined with 95% vertical burst climb.</div>
+              <div class="module-tags">
+                <span class="tag">90° Escape Angle</span>
+                <span class="tag">Climb Throttle Burst</span>
+                <span class="tag">Predator Dive Evasion</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('SafetyTunnel')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/></svg>
+                3D Volumetric Cylinder Tunnel
+              </div>
+              <div class="module-role">Constructs expanding dynamic keep-out corridor r(k) along spline with time milestone rib rings at 1s, 2s, 3s, and 4s arrival horizons.</div>
+              <div class="module-tags">
+                <span class="tag">Gaussian Glow Envelope</span>
+                <span class="tag">1.6x Clearance Gate</span>
+                <span class="tag">Milestone Badges</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('MAVLinkBridge')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                MAVLink #147 Autopilot Bridge
+              </div>
+              <div class="module-role">Formats and broadcasts TRAJECTORY_WAYPOINTS messages over serial/UDP to Pixhawk, PX4, or ArduPilot flight controllers.</div>
+              <div class="module-tags">
+                <span class="tag">MAVLink v2.0</span>
+                <span class="tag">10 Hz Telemetry Rate</span>
+                <span class="tag">Safety Simulation Guard</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LAYER 6: STORAGE & DATASET -->
+        <div class="layer-card" data-category="Android Deep Learning" style="--layer-accent: #38bdf8; --layer-rgb: 56, 189, 248;">
+          <div class="layer-header">
+            <div class="layer-title-group">
+              <span class="layer-badge">Layer 6</span>
+              <div>
+                <h3 class="layer-title">Storage, Active Dataset & Checkpoints Layer</h3>
+                <p class="layer-desc">On-device track recorder, synthetic flight dynamics simulator, and mirrored checkpoint persistence</p>
+              </div>
+            </div>
+            <span class="tag">JSON & NumPy NPZ Format</span>
+          </div>
+
+          <div class="modules-grid">
+            <div class="module-card" onclick="openInspector('TrackRecorder')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+                TrackRecorder.kt
+              </div>
+              <div class="module-role">Android active learning recorder; serializes raw camera detection tracks into structured JSON files for retraining.</div>
+              <div class="module-tags">
+                <span class="tag">Scoped Storage</span>
+                <span class="tag">JSON Serialization</span>
+                <span class="tag">Edge Harvest</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('DatasetBuilder')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                Synthetic Flight Simulator (dataset_builder.py)
+              </div>
+              <div class="module-role">Simulates straight glides, banking turns, and thermal soaring paths with aerodynamic physics and Brownian gusts (764,000+ transitions).</div>
+              <div class="module-tags">
+                <span class="tag">Centripetal Banking</span>
+                <span class="tag">Thermal Updrafts</span>
+                <span class="tag">70/15/15 Split</span>
+              </div>
+            </div>
+
+            <div class="module-card" onclick="openInspector('CheckpointManager')">
+              <div class="module-name">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Model Checkpoint Store
+              </div>
+              <div class="module-role">Mirrors trained PyTorch models (.pt), ONNX graphs (.onnx), and Float16/INT8 quantized mobile packages (.tflite) across studio workspaces.</div>
+              <div class="module-tags">
+                <span class="tag">PyTorch .pt</span>
+                <span class="tag">ONNX Opset 14</span>
+                <span class="tag">TFLite FP16/INT8</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 2: DATA FLOW PIPELINE (10 STEPS - MOST IMPORTANT)            -->
+    <!-- ================================================================= -->
+    <div id="tab-dataflow" class="tab-view">
+      <div class="data-flow-container">
+
+        <!-- INTERACTIVE ANIMATED SVG FLOW DIAGRAM -->
+        <div class="svg-flow-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div style="font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00f2fe" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              INTERACTIVE PIPELINE TOPOLOGY & DATA TRANSIT
+            </div>
+            <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-dim);">CLICK ANY NODE TO INSPECT PAYLOAD & MATH</span>
+          </div>
+
+          <svg viewBox="0 0 1200 240" width="100%" height="240" style="background: rgba(0,0,0,0.3); border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+            <!-- Flow Paths (Dashed Animated Lines) -->
+            <path d="M 90 120 L 200 120" stroke="#00f2fe" stroke-width="3" fill="none" class="flow-line" opacity="0.8"/>
+            <path d="M 200 120 L 310 70" stroke="#38bdf8" stroke-width="3" fill="none" class="flow-line" opacity="0.8"/>
+            <path d="M 200 120 L 310 170" stroke="#818cf8" stroke-width="2.5" stroke-dasharray="4,4" fill="none" opacity="0.6"/>
+            <path d="M 310 70 L 420 120" stroke="#a855f7" stroke-width="3" fill="none" class="flow-line" opacity="0.8"/>
+            <path d="M 310 170 L 420 120" stroke="#818cf8" stroke-width="2" stroke-dasharray="4,4" fill="none" opacity="0.6"/>
+            <path d="M 420 120 L 530 120" stroke="#ec4899" stroke-width="3" fill="none" class="flow-line" opacity="0.8"/>
+            <path d="M 530 120 L 640 120" stroke="#10b981" stroke-width="3" fill="none" class="flow-line" opacity="0.8"/>
+            <path d="M 640 120 L 750 120" stroke="#14b8a6" stroke-width="3" fill="none" class="flow-line" opacity="0.8"/>
+            <path d="M 750 120 L 860 120" stroke="#8b5cf6" stroke-width="3" fill="none" class="flow-line" opacity="0.8"/>
+            <path d="M 860 120 L 970 70" stroke="#f59e0b" stroke-width="3" fill="none" class="flow-line" opacity="0.8"/>
+            <path d="M 860 120 L 970 170" stroke="#ef4444" stroke-width="3" fill="none" class="flow-line" opacity="0.8"/>
+            <path d="M 970 70 L 1090 70" stroke="#f59e0b" stroke-width="3" fill="none" class="flow-line" opacity="0.8"/>
+            <path d="M 970 170 L 1090 170" stroke="#ef4444" stroke-width="3" fill="none" class="flow-line" opacity="0.8"/>
+
+            <!-- Node 1: Camera Ingest -->
+            <g transform="translate(90, 120)" cursor="pointer" onclick="jumpToStep(1)">
+              <circle r="28" fill="#0c1527" stroke="#00f2fe" stroke-width="2.5"/>
+              <text text-anchor="middle" dy="-5" font-family="monospace" font-size="11" font-weight="bold" fill="#00f2fe">01</text>
+              <text text-anchor="middle" dy="12" font-size="9" fill="#f1f5f9">Camera</text>
+              <text text-anchor="middle" dy="44" font-family="monospace" font-size="8" fill="#94a3b8">1080p@60fps</text>
+            </g>
+
+            <!-- Node 2: Letterbox / SAHI -->
+            <g transform="translate(200, 120)" cursor="pointer" onclick="jumpToStep(2)">
+              <circle r="26" fill="#0c1527" stroke="#38bdf8" stroke-width="2.5"/>
+              <text text-anchor="middle" dy="-4" font-family="monospace" font-size="11" font-weight="bold" fill="#38bdf8">02</text>
+              <text text-anchor="middle" dy="12" font-size="9" fill="#f1f5f9">Preprocess</text>
+              <text text-anchor="middle" dy="44" font-family="monospace" font-size="8" fill="#94a3b8">640x640</text>
+            </g>
+
+            <!-- Node 3: Motion Hint (Parallel Branch) -->
+            <g transform="translate(310, 170)" cursor="pointer" onclick="jumpToStep(3)">
+              <circle r="22" fill="#0c1527" stroke="#818cf8" stroke-width="2"/>
+              <text text-anchor="middle" dy="-3" font-family="monospace" font-size="10" font-weight="bold" fill="#818cf8">03</text>
+              <text text-anchor="middle" dy="11" font-size="8.5" fill="#f1f5f9">MotionHint</text>
+              <text text-anchor="middle" dy="38" font-family="monospace" font-size="7.5" fill="#94a3b8">Diff +0.20</text>
+            </g>
+
+            <!-- Node 4: YOLOv8 Detector -->
+            <g transform="translate(310, 70)" cursor="pointer" onclick="jumpToStep(4)">
+              <circle r="28" fill="#0c1527" stroke="#a855f7" stroke-width="2.5"/>
+              <text text-anchor="middle" dy="-5" font-family="monospace" font-size="11" font-weight="bold" fill="#a855f7">04</text>
+              <text text-anchor="middle" dy="12" font-size="9" fill="#f1f5f9">YOLOv8</text>
+              <text text-anchor="middle" dy="-38" font-family="monospace" font-size="8" fill="#c084fc">8400 Anchors</text>
+            </g>
+
+            <!-- Node 5: Ego-Motion Compensation -->
+            <g transform="translate(420, 120)" cursor="pointer" onclick="jumpToStep(5)">
+              <circle r="26" fill="#0c1527" stroke="#ec4899" stroke-width="2.5"/>
+              <text text-anchor="middle" dy="-4" font-family="monospace" font-size="11" font-weight="bold" fill="#ec4899">05</text>
+              <text text-anchor="middle" dy="12" font-size="9" fill="#f1f5f9">EgoMotion</text>
+              <text text-anchor="middle" dy="44" font-family="monospace" font-size="8" fill="#f472b6">Gyro / OF</text>
+            </g>
+
+            <!-- Node 6: ByteTrack + 8D Kalman -->
+            <g transform="translate(530, 120)" cursor="pointer" onclick="jumpToStep(6)">
+              <circle r="28" fill="#0c1527" stroke="#10b981" stroke-width="2.5"/>
+              <text text-anchor="middle" dy="-5" font-family="monospace" font-size="11" font-weight="bold" fill="#10b981">06</text>
+              <text text-anchor="middle" dy="12" font-size="9" fill="#f1f5f9">ByteTrack</text>
+              <text text-anchor="middle" dy="44" font-family="monospace" font-size="8" fill="#34d399">8D Kalman</text>
+            </g>
+
+            <!-- Node 7: CoM Decoupling -->
+            <g transform="translate(640, 120)" cursor="pointer" onclick="jumpToStep(7)">
+              <circle r="26" fill="#0c1527" stroke="#14b8a6" stroke-width="2.5"/>
+              <text text-anchor="middle" dy="-4" font-family="monospace" font-size="11" font-weight="bold" fill="#14b8a6">07</text>
+              <text text-anchor="middle" dy="12" font-size="9" fill="#f1f5f9">CoM Filter</text>
+              <text text-anchor="middle" dy="44" font-family="monospace" font-size="8" fill="#2dd4bf">α=0.28, β=0.04</text>
+            </g>
+
+            <!-- Node 8: Deep GRU -->
+            <g transform="translate(750, 120)" cursor="pointer" onclick="jumpToStep(8)">
+              <circle r="30" fill="#0c1527" stroke="#8b5cf6" stroke-width="2.5"/>
+              <text text-anchor="middle" dy="-5" font-family="monospace" font-size="11" font-weight="bold" fill="#8b5cf6">08</text>
+              <text text-anchor="middle" dy="12" font-size="9" fill="#f1f5f9">GRU Deep</text>
+              <text text-anchor="middle" dy="46" font-family="monospace" font-size="8" fill="#a78bfa">20 Future Pts</text>
+            </g>
+
+            <!-- Node 9: 3D Tunnel & Spline -->
+            <g transform="translate(860, 70)" cursor="pointer" onclick="jumpToStep(9)">
+              <circle r="26" fill="#0c1527" stroke="#f59e0b" stroke-width="2.5"/>
+              <text text-anchor="middle" dy="-4" font-family="monospace" font-size="11" font-weight="bold" fill="#f59e0b">09</text>
+              <text text-anchor="middle" dy="12" font-size="9" fill="#f1f5f9">3D Tunnel</text>
+              <text text-anchor="middle" dy="-38" font-family="monospace" font-size="8" fill="#fbbf24">Catmull-Rom</text>
+            </g>
+
+            <!-- Node 10: Evasion / MAVLink -->
+            <g transform="translate(860, 170)" cursor="pointer" onclick="jumpToStep(10)">
+              <circle r="26" fill="#0c1527" stroke="#ef4444" stroke-width="2.5"/>
+              <text text-anchor="middle" dy="-4" font-family="monospace" font-size="11" font-weight="bold" fill="#ef4444">10</text>
+              <text text-anchor="middle" dy="12" font-size="9" fill="#f1f5f9">Evasion</text>
+              <text text-anchor="middle" dy="44" font-family="monospace" font-size="8" fill="#f87171">MAVLink #147</text>
+            </g>
+
+            <!-- Consumers -->
+            <g transform="translate(1030, 70)">
+              <rect x="-50" y="-18" width="100" height="36" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+              <text text-anchor="middle" dy="4" font-size="9.5" font-weight="bold" fill="#fff">Overlay HUD</text>
+            </g>
+
+            <g transform="translate(1030, 170)">
+              <rect x="-50" y="-18" width="100" height="36" rx="8" fill="#1e293b" stroke="#ef4444" stroke-width="1.5"/>
+              <text text-anchor="middle" dy="4" font-size="9.5" font-weight="bold" fill="#fff">Pixhawk FC</text>
+            </g>
+          </svg>
+        </div>
+        
+        <div class="pipeline-controls">
+          <div class="step-counter">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span>DATA FLOW PIPELINE (STEP <span id="currentStepIdx">1</span> OF 10)</span>
+          </div>
+          <div class="flow-scrubber">
+            <button class="scrub-pill active" onclick="jumpToStep(1)">1. Sensor Stream</button>
+            <button class="scrub-pill" onclick="jumpToStep(2)">2. Letterbox & Tile</button>
+            <button class="scrub-pill" onclick="jumpToStep(3)">3. Motion Hint</button>
+            <button class="scrub-pill" onclick="jumpToStep(4)">4. YOLOv8 Inference</button>
+            <button class="scrub-pill" onclick="jumpToStep(5)">5. Ego-Motion Shift</button>
+            <button class="scrub-pill" onclick="jumpToStep(6)">6. ByteTrack & Kalman</button>
+            <button class="scrub-pill" onclick="jumpToStep(7)">7. CoM Decoupling</button>
+            <button class="scrub-pill" onclick="jumpToStep(8)">8. Deep GRU Forecast</button>
+            <button class="scrub-pill" onclick="jumpToStep(9)">9. Spline & Tunnel</button>
+            <button class="scrub-pill" onclick="jumpToStep(10)">10. Evasion & MAVLink</button>
+          </div>
+        </div>
+
+        <div class="pipeline-cards-grid">
+          <div class="flow-spine"></div>
+
+          <!-- STEP 1 -->
+          <div class="step-node-card highlighted" id="step-1" style="--step-color: #00f2fe; --step-rgb: 0, 242, 254;" onclick="inspectStep(1)">
+            <div class="step-number-circle">01</div>
+            <div class="step-content-main">
+              <h4>
+                <span>Frame Ingestion & Hardware Acquisition</span>
+                <span class="step-action-tag">CREATION</span>
+              </h4>
+              <p>CameraX captures 1080p preview frames at 60 FPS on Android; or OpenCV / yt-dlp ingests high-definition video streams on server.</p>
+              <div class="step-math-pill">STRATEGY_KEEP_ONLY_LATEST | OpenCV cv2.VideoCapture(0)</div>
+            </div>
+            <div class="payload-badge-box">
+              <div class="payload-header">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                PASSED PAYLOAD
+              </div>
+              <div class="payload-val">ImageProxy / BGR Frame (1920x1080 uint8)</div>
+              <div class="payload-dest">→ Delivered to Preprocessor (Step 2)</div>
+            </div>
+          </div>
+
+          <!-- STEP 2 -->
+          <div class="step-node-card" id="step-2" style="--step-color: #38bdf8; --step-rgb: 56, 189, 248;" onclick="inspectStep(2)">
+            <div class="step-number-circle">02</div>
+            <div class="step-content-main">
+              <h4>
+                <span>Letterbox Preprocessing & Sliced SAHI Tiling</span>
+                <span class="step-action-tag">TRANSFORMATION</span>
+              </h4>
+              <p>Maintains aspect ratio with symmetric gray padding to 640x640; optionally divides frame into 2x2 overlapping quadrant crops (15% overlap) for small bird targets.</p>
+              <div class="step-math-pill">scale = min(640/w, 640/h), pad_x = (640 - w*s)/2, pad_y = (640 - h*s)/2</div>
+            </div>
+            <div class="payload-badge-box">
+              <div class="payload-header">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                PASSED PAYLOAD
+              </div>
+              <div class="payload-val">Tensor [1, 3, 640, 640] Float32 Normalized [0, 1]</div>
+              <div class="payload-dest">→ Delivered to YOLO Detector (Step 4)</div>
+            </div>
+          </div>
+
+          <!-- STEP 3 -->
+          <div class="step-node-card" id="step-3" style="--step-color: #818cf8; --step-rgb: 129, 140, 248;" onclick="inspectStep(3)">
+            <div class="step-number-circle">03</div>
+            <div class="step-content-main">
+              <h4>
+                <span>Motion Hint Temporal Differencing (Optional)</span>
+                <span class="step-action-tag">FEATURE EXTRACTION</span>
+              </h4>
+              <p>Computes grayscale difference mask between frame t and frame t-1 at downsampled 320x180 resolution. Boosts detection confidence by +0.20 for moving objects.</p>
+              <div class="step-math-pill">M = MorphOpen(|I_t - I_t-1| > 25, 3x3)</div>
+            </div>
+            <div class="payload-badge-box">
+              <div class="payload-header">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                PASSED PAYLOAD
+              </div>
+              <div class="payload-val">Binary Motion Mask & Spatial Centroids</div>
+              <div class="payload-dest">→ Fed to Score Booster (Step 4)</div>
+            </div>
+          </div>
+
+          <!-- STEP 4 -->
+          <div class="step-node-card" id="step-4" style="--step-color: #a855f7; --step-rgb: 168, 85, 247;" onclick="inspectStep(4)">
+            <div class="step-number-circle">04</div>
+            <div class="step-content-main">
+              <h4>
+                <span>YOLOv8 Detection & Greedy NMS Suppression</span>
+                <span class="step-action-tag">INFERENCE</span>
+              </h4>
+              <p>Executes deep CNN inference over 8,400 anchors on TFLite GPU Delegate or PyTorch CUDA. Filters bounding boxes with NMS IoU ≤ 0.45 and Conf ≥ 0.25.</p>
+              <div class="step-math-pill">Outputs 8400 anchors: [cx, cy, w, h, class_score] → Greedy NMS</div>
+            </div>
+            <div class="payload-badge-box">
+              <div class="payload-header">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                PASSED PAYLOAD
+              </div>
+              <div class="payload-val">List&lt;Detection&gt;: [cx, cy, w, h, score]</div>
+              <div class="payload-dest">→ Delivered to ByteTracker (Step 6)</div>
+            </div>
+          </div>
+
+          <!-- STEP 5 -->
+          <div class="step-node-card" id="step-5" style="--step-color: #ec4899; --step-rgb: 236, 72, 153;" onclick="inspectStep(5)">
+            <div class="step-number-circle">05</div>
+            <div class="step-content-main">
+              <h4>
+                <span>Camera Ego-Motion Compensation</span>
+                <span class="step-action-tag">GEOMETRIC CALIBRATION</span>
+              </h4>
+              <p>Subtracts drone pitch/yaw and handheld phone panning from track positions via Lucas-Kanade optical flow on background corners or 3-axis hardware gyroscope.</p>
+              <div class="step-math-pill">Android: dx = f_x * ω_y * dt, dy = -f_y * ω_x * dt | Python: RANSAC Affine M</div>
+            </div>
+            <div class="payload-badge-box">
+              <div class="payload-header">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                PASSED PAYLOAD
+              </div>
+              <div class="payload-val">Shift Vector (Δx_cam, Δy_cam) & Inverse Affine M⁻¹</div>
+              <div class="payload-dest">→ Adjusts Kalman state priors (Step 6)</div>
+            </div>
+          </div>
+
+          <!-- STEP 6 -->
+          <div class="step-node-card" id="step-6" style="--step-color: #10b981; --step-rgb: 16, 185, 129;" onclick="inspectStep(6)">
+            <div class="step-number-circle">06</div>
+            <div class="step-content-main">
+              <h4>
+                <span>ByteTrack Two-Stage Association & 8D Kalman State</span>
+                <span class="step-action-tag">DATA ASSOCIATION</span>
+              </h4>
+              <p>Stage 1 matches high-conf detections (≥0.50) via Hungarian IoU; Stage 2 matches low-conf remnants (0.10–0.50) to preserve tracks through blur/occlusions.</p>
+              <div class="step-math-pill">x = [cx, cy, w, h, vx, vy, vw, vh]ᵀ | x = F*x + K*(z - H*x)</div>
+            </div>
+            <div class="payload-badge-box">
+              <div class="payload-header">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                PASSED PAYLOAD
+              </div>
+              <div class="payload-val">Active Track State: track_id, 8D Kalman vector</div>
+              <div class="payload-dest">→ Passed to CoM Filter & Ring Buffer (Step 7)</div>
+            </div>
+          </div>
+
+          <!-- STEP 7 -->
+          <div class="step-node-card" id="step-7" style="--step-color: #14b8a6; --step-rgb: 20, 184, 166;" onclick="inspectStep(7)">
+            <div class="step-number-circle">07</div>
+            <div class="step-content-main">
+              <h4>
+                <span>Aerodynamic Center-of-Mass (CoM) Decoupling</span>
+                <span class="step-action-tag">KINEMATIC STABILIZATION</span>
+              </h4>
+              <p>Applies α-β filter (α=0.28, β=0.04) to strip flapping wing-beat vertical oscillations from the true physical center of gravity, preventing noisy GRU inputs.</p>
+              <div class="step-math-pill">x̂_k = x_pred + 0.28*(z - x_pred),  v_k = v_prev + (0.04/dt)*(z - x_pred)</div>
+            </div>
+            <div class="payload-badge-box">
+              <div class="payload-header">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                PASSED PAYLOAD
+              </div>
+              <div class="payload-val">Smoothed Feature Vector [cx, cy, w, h, dx, dy]</div>
+              <div class="payload-dest">→ Pushed into 30-frame Track FIFO (Step 8)</div>
+            </div>
+          </div>
+
+          <!-- STEP 8 -->
+          <div class="step-node-card" id="step-8" style="--step-color: #8b5cf6; --step-rgb: 139, 92, 246;" onclick="inspectStep(8)">
+            <div class="step-number-circle">08</div>
+            <div class="step-content-main">
+              <h4>
+                <span>Deep Trajectory GRU Inference & Uncertainty Bounds</span>
+                <span class="step-action-tag">SEQUENCE FORECASTING</span>
+              </h4>
+              <p>Feeds normalized 15-frame history tensor into 2-layer GRU (hidden=128). Outputs 20 future offset coordinates [mean_x, mean_y] with heteroscedastic log-variance [σ_x², σ_y²].</p>
+              <div class="step-math-pill">GRU(X[15, 6]) → MLP(128, 80) → (20, 4) [μ_x, μ_y, ln σ_x², ln σ_y²]</div>
+            </div>
+            <div class="payload-badge-box">
+              <div class="payload-header">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                PASSED PAYLOAD
+              </div>
+              <div class="payload-val">20 Future Waypoints + Uncertainty Radii (Float32)</div>
+              <div class="payload-dest">→ Sent to Spline Renderer & Evasion (Steps 9 & 10)</div>
+            </div>
+          </div>
+
+          <!-- STEP 9 -->
+          <div class="step-node-card" id="step-9" style="--step-color: #f59e0b; --step-rgb: 245, 158, 11;" onclick="inspectStep(9)">
+            <div class="step-number-circle">09</div>
+            <div class="step-content-main">
+              <h4>
+                <span>85/15 Hybrid Blending, Catmull-Rom Spline & 3D Tunnel</span>
+                <span class="step-action-tag">RENDERING & COMPOSITION</span>
+              </h4>
+              <p>Blends Newtonian constant velocity/accel physics (85%) with GRU non-linear residual (15%). Catmull-Rom generates C1 smooth curves; renders 3D cylinder keep-out tunnel with milestone rib rings.</p>
+              <div class="step-math-pill">P_blend = 0.85*P_kinematic + 0.15*P_GRU | r_outer(k) = min(130, 1.5*r_rad + 0.35*r_base + 0.30*k)</div>
+            </div>
+            <div class="payload-badge-box">
+              <div class="payload-header">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                PASSED PAYLOAD
+              </div>
+              <div class="payload-val">Composited Visual Layers & Inset Graphs</div>
+              <div class="payload-dest">→ Rendered on Screen / Streamed via MJPEG</div>
+            </div>
+          </div>
+
+          <!-- STEP 10 -->
+          <div class="step-node-card" id="step-10" style="--step-color: #ef4444; --step-rgb: 239, 68, 68;" onclick="inspectStep(10)">
+            <div class="step-number-circle">10</div>
+            <div class="step-content-main">
+              <h4>
+                <span>TCPA Threat Evaluation & MAVLink Evasion Dispatch</span>
+                <span class="step-action-tag">AUTONOMOUS ROBOTICS ACTION</span>
+              </h4>
+              <p>Computes collision TCPA. If threat distance ≤ 50m and TCPA ≤ 2.5s, issues 90° orthogonal escape break waypoint and 95% vertical burst climb over MAVLink #147 to Pixhawk autopilot.</p>
+              <div class="step-math-pill">TCPA = -(r·v)/|v|² | θ_escape = (θ_bird ± 90°) mod 360° | MAVLink #147</div>
+            </div>
+            <div class="payload-badge-box">
+              <div class="payload-header">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                PASSED PAYLOAD
+              </div>
+              <div class="payload-val">MAVLink TRAJECTORY_WAYPOINTS (UDP / Serial)</div>
+              <div class="payload-dest">→ Consumed by UAV Flight Controller & Pilot HUD</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 3: STEP-BY-STEP WORKFLOW & DECISION GATES                     -->
+    <!-- ================================================================= -->
+    <div id="tab-workflow" class="tab-view">
+      <div class="flowchart-container">
+        
+        <div class="tree-step">
+          <div class="decision-diamond">
+            <div class="decision-title">DECISION GATE 1: Detection Score Threshold</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Is bounding box raw confidence ≥ 0.25 (eval: 0.30)?</div>
+          </div>
+          <div class="decision-branches">
+            <div class="branch-card branch-success">
+              <div style="font-weight: 700; color: #34d399; font-size: 0.85rem; margin-bottom: 4px;">✓ YES (Candidate Retained)</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Box passes to ByteTrack partitioner. If score ≥ 0.50, routed to High-Confidence Pool (Stage 1). If 0.10 ≤ score &lt; 0.50, routed to Low-Confidence Remnant Pool (Stage 2).</div>
+            </div>
+            <div class="branch-card branch-failure">
+              <div style="font-weight: 700; color: #f87171; font-size: 0.85rem; margin-bottom: 4px;">✗ NO (score &lt; 0.10)</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Discarded immediately as false positive camera noise, insect, or cloud edge artifact. Kalman filter continues in pure kinematic predict-only mode.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tree-step">
+          <div class="decision-diamond">
+            <div class="decision-title">DECISION GATE 2: ByteTrack Two-Stage Hungarian Matching</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Does high-conf detection IoU match an existing active track?</div>
+          </div>
+          <div class="decision-branches">
+            <div class="branch-card branch-success">
+              <div style="font-weight: 700; color: #34d399; font-size: 0.85rem; margin-bottom: 4px;">✓ MATCHED (Stage 1 or Stage 2)</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Kalman update applied: y = z - Hx, K = P·Hᵀ·inv(S), x = x + K·y. Track time_lost reset to 0. Historical coordinate buffer appended with current CoM position.</div>
+            </div>
+            <div class="branch-card branch-failure">
+              <div style="font-weight: 700; color: #f87171; font-size: 0.85rem; margin-bottom: 4px;">✗ UNMATCHED TRACK / NEW TARGET</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">If unmatched high-conf detection: initialize new TENTATIVE track (confirmed after 3 consecutive hits). If unmatched active track: increment time_lost; if time_lost &gt; 90 frames, purge track.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tree-step">
+          <div class="decision-diamond">
+            <div class="decision-title">DECISION GATE 3: Trajectory Forecasting Mode</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Does track have sufficient history (N ≥ 15 frames)?</div>
+          </div>
+          <div class="decision-branches">
+            <div class="branch-card branch-success">
+              <div style="font-weight: 700; color: #34d399; font-size: 0.85rem; margin-bottom: 4px;">✓ YES (N ≥ 15 frames)</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Construct normalized (15, 6) history tensor. Execute 2-layer GRU forward pass to predict 20 non-linear future waypoints with heteroscedastic uncertainty bounds.</div>
+            </div>
+            <div class="branch-card branch-failure">
+              <div style="font-weight: 700; color: #fbbf24; font-size: 0.85rem; margin-bottom: 4px;">⚠ FALLBACK (N &lt; 15 frames)</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Kinematic Fallback Extrapolator: projects future waypoints using 8D Kalman filter linear velocity vector [vx, vy]. Once track reaches 15 frames, GRU seamlessly takes over.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tree-step">
+          <div class="decision-diamond">
+            <div class="decision-title">DECISION GATE 4: Autonomous UAV Collision Hazard Check</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Is target distance ≤ 50m AND Time-to-Closest-Approach (TCPA) ≤ 2.5s?</div>
+          </div>
+          <div class="decision-branches">
+            <div class="branch-card branch-failure" style="border-color: #ef4444; background: rgba(239, 68, 68, 0.08);">
+              <div style="font-weight: 700; color: #ef4444; font-size: 0.85rem; margin-bottom: 4px;">🚨 IMMINENT COLLISION THREAT</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Trigger auditory/visual red HUD alarm. Compute 90° orthogonal escape break angle (θ_escape = θ_bird ± 90°). Dispatch MAVLink #147 emergency waypoint with 95% climb throttle burst.</div>
+            </div>
+            <div class="branch-card branch-success">
+              <div style="font-weight: 700; color: #34d399; font-size: 0.85rem; margin-bottom: 4px;">✓ CLEAR AIRSPACE (Safe Separation)</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Target outside critical safety envelope. Render nominal 3D green/cyan flight corridor with arrival time badges (+1s, +2s, +3s). Maintain mission flight plan.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 4: FUNCTIONS & CALL HIERARCHY                                 -->
+    <!-- ================================================================= -->
+    <div id="tab-functions" class="tab-view">
+      <div class="function-table-wrap">
+        <table class="func-table">
+          <thead>
+            <tr>
+              <th style="width: 25%;">Function & Module</th>
+              <th style="width: 30%;">Signature & Parameters</th>
+              <th style="width: 25%;">Inputs & Outputs</th>
+              <th style="width: 20%;">Call Hierarchy</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="func-name">MainActivity.processCameraFrame</div>
+                <div class="func-module">android/MainActivity.kt</div>
+              </td>
+              <td>
+                <div class="func-sig">processCameraFrame(imageProxy: ImageProxy)</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Per-frame master pipeline coordinator on Android edge.</div>
+              </td>
+              <td>
+                <div style="font-size: 0.75rem; color: #38bdf8;">In: ImageProxy (1080p RGBA)</div>
+                <div style="font-size: 0.75rem; color: #34d399;">Out: Unit (triggers OverlayView.invalidate())</div>
+              </td>
+              <td>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                  Called by: CameraX Executor<br/>
+                  Calls: YoloDetector, ByteTracker, TrajectoryPredictor
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="func-name">YoloDetector.runSingleInference</div>
+                <div class="func-module">android/ml/YoloDetector.kt</div>
+              </td>
+              <td>
+                <div class="func-sig">runSingleInference(bitmap, confThresh, iouThresh): List&lt;Detection&gt;</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Letterboxes image, runs TFLite GPU inference, applies greedy NMS.</div>
+              </td>
+              <td>
+                <div style="font-size: 0.75rem; color: #38bdf8;">In: Bitmap (640x640)</div>
+                <div style="font-size: 0.75rem; color: #34d399;">Out: List&lt;Detection&gt; [cx, cy, w, h, score]</div>
+              </td>
+              <td>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                  Called by: processCameraFrame<br/>
+                  Calls: TFLite Interpreter.run()
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="func-name">ByteTracker.update</div>
+                <div class="func-module">python/tracker.py & ByteTracker.kt</div>
+              </td>
+              <td>
+                <div class="func-sig">update(detections: List[Detection]): List[Track]</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">2-stage Hungarian association & Kalman predict/update.</div>
+              </td>
+              <td>
+                <div style="font-size: 0.75rem; color: #38bdf8;">In: List of BBoxes [cx, cy, w, h, score]</div>
+                <div style="font-size: 0.75rem; color: #34d399;">Out: List of Active Confirmed Tracks</div>
+              </td>
+              <td>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                  Called by: VideoTrackerEngine.process_frame<br/>
+                  Calls: KalmanFilter.predict, KalmanFilter.update
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="func-name">KalmanFilter.update</div>
+                <div class="func-module">python/tracker.py & KalmanFilter.kt</div>
+              </td>
+              <td>
+                <div class="func-sig">update(measurement: [cx, cy, w, h]): void</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Computes innovation y = z - Hx, Kalman gain K, updates 8D state vector.</div>
+              </td>
+              <td>
+                <div style="font-size: 0.75rem; color: #38bdf8;">In: Measurement z [4x1]</div>
+                <div style="font-size: 0.75rem; color: #34d399;">Out: Updated State x [8x1], Covariance P [8x8]</div>
+              </td>
+              <td>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                  Called by: ByteTracker.update<br/>
+                  Calls: invert4x4 (analytical matrix inversion)
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="func-name">BirdTrajectoryGRU.forward</div>
+                <div class="func-module">python/models_trajectory.py</div>
+              </td>
+              <td>
+                <div class="func-sig">forward(x: Tensor[B, 15, 6]): Tensor[B, 20, 4]</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">2-layer GRU recurrence + MLP projection head with log-variance.</div>
+              </td>
+              <td>
+                <div style="font-size: 0.75rem; color: #38bdf8;">In: Tensor [B, 15, 6] (normalized history)</div>
+                <div style="font-size: 0.75rem; color: #34d399;">Out: Tensor [B, 20, 4] (offsets + logvar)</div>
+              </td>
+              <td>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                  Called by: OnlineTrajectoryTrainer.predict / train_step<br/>
+                  Calls: torch.nn.GRU, torch.nn.Linear
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="func-name">LayerVisualizer.render</div>
+                <div class="func-module">computer learning/visualizer.py</div>
+              </td>
+              <td>
+                <div class="func-sig">render(frame_bgr, birds, horizon=20): np.ndarray</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Composites active layers: boxes, splines, 3D tunnels, rings, and mini HUDs.</div>
+              </td>
+              <td>
+                <div style="font-size: 0.75rem; color: #38bdf8;">In: Raw BGR Frame + Bird Track Metadata</div>
+                <div style="font-size: 0.75rem; color: #34d399;">Out: Composited Display Frame (BGR)</div>
+              </td>
+              <td>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                  Called by: StudioSession._run_loop<br/>
+                  Calls: _draw_tunnel, _draw_inset_graph, _draw_drone_vr_hud
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="func-name">StudioSession.get_drone_evasion_telemetry</div>
+                <div class="func-module">computer learning/server.py</div>
+              </td>
+              <td>
+                <div class="func-sig">get_drone_evasion_telemetry(): dict</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Computes TCPA, relative velocity vector, and simulated MAVLink packet.</div>
+              </td>
+              <td>
+                <div style="font-size: 0.75rem; color: #38bdf8;">In: Active Bird Track Histories + Drone Vector</div>
+                <div style="font-size: 0.75rem; color: #34d399;">Out: Telemetry JSON + MAVLink payload</div>
+              </td>
+              <td>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                  Called by: /api/drone_evasion REST / WebSocket endpoint<br/>
+                  Calls: TCPA math solver, orthogonal break calculator
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 5: FEATURES MATRIX (CORE VS OPTIONAL)                         -->
+    <!-- ================================================================= -->
+    <div id="tab-features" class="tab-view">
+      <div class="features-grid">
+
+        <!-- Feature 1 -->
+        <div class="feature-card" data-category="Vision">
+          <div>
+            <div class="feature-header">
+              <span class="feature-badge-core">CORE FEATURE</span>
+              <span class="tag">60 FPS</span>
+            </div>
+            <h4 class="feature-title">Real-Time Single-Class Bird Detection</h4>
+            <p class="feature-desc">High-speed YOLOv8n / YOLO11n model detecting flying birds against skies, complex trees, and urban backgrounds with letterbox coordinate normalization.</p>
+          </div>
+          <div class="feature-link-list">
+            Powered by: YoloDetector.kt, train_detector.py, TFLite GPU Delegate
+          </div>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card" data-category="Tracking">
+          <div>
+            <div class="feature-header">
+              <span class="feature-badge-core">CORE FEATURE</span>
+              <span class="tag">Zero-ID-Switch</span>
+            </div>
+            <h4 class="feature-title">ByteTrack & 8D Kalman Multi-Target Tracking</h4>
+            <p class="feature-desc">Maintains consistent target IDs across temporary occlusions and motion blur by matching high and low confidence detections in 2 sequential stages.</p>
+          </div>
+          <div class="feature-link-list">
+            Powered by: ByteTracker.kt, tracker.py, KalmanFilter.kt
+          </div>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card" data-category="Deep Learning">
+          <div>
+            <div class="feature-header">
+              <span class="feature-badge-core">CORE FEATURE</span>
+              <span class="tag">ADE: 0.0399</span>
+            </div>
+            <h4 class="feature-title">Deep GRU Multi-Horizon Trajectory Forecasting</h4>
+            <p class="feature-desc">Forecasts non-linear flight paths up to 20 steps (0.5s–4.0s) into the future with heteroscedastic Gaussian uncertainty bounds.</p>
+          </div>
+          <div class="feature-link-list">
+            Powered by: BirdTrajectoryGRU, models_trajectory.py, TrajectoryPredictor.kt
+          </div>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-card" data-category="Android">
+          <div>
+            <div class="feature-header">
+              <span class="feature-badge-core">CORE FEATURE</span>
+              <span class="tag">C1 Splines</span>
+            </div>
+            <h4 class="feature-title">Hardware-Accelerated 3-Layer Visual Overlay</h4>
+            <p class="feature-desc">Composites live camera feed, bounding boxes, and smooth Catmull-Rom cubic trajectory splines with fading alpha and 500ms lost-track cache.</p>
+          </div>
+          <div class="feature-link-list">
+            Powered by: OverlayView.kt, CoordinateMapper.kt, CatmullRomSpline.kt
+          </div>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="feature-card" data-category="Robotics">
+          <div>
+            <div class="feature-header">
+              <span class="feature-badge-core">CORE FEATURE</span>
+              <span class="tag">TCPA &lt; 2.5s</span>
+            </div>
+            <h4 class="feature-title">Drone Collision Evasion Solver & MAVLink Dispatch</h4>
+            <p class="feature-desc">Calculates time-to-collision and executes 90° lateral break escapes and 95% climb burst throttle commands over MAVLink #147 to Pixhawk autopilot.</p>
+          </div>
+          <div class="feature-link-list">
+            Powered by: server.py get_drone_evasion_telemetry, MAVLink v2.0
+          </div>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="feature-card" data-category="Vision">
+          <div>
+            <div class="feature-header">
+              <span class="feature-badge-opt">OPTIONAL / ENHANCED</span>
+              <span class="tag">SAHI 2x2</span>
+            </div>
+            <h4 class="feature-title">Quadrant Sliced Tiling (SAHI) for Small Birds</h4>
+            <p class="feature-desc">Slices high-resolution 1080p frames into 4 overlapping 640x640 quadrant tiles with 15% overlap to detect distant raptors before merging with greedy NMS.</p>
+          </div>
+          <div class="feature-link-list">
+            Powered by: YoloDetector.runTiledInference, train_detector.py
+          </div>
+        </div>
+
+        <!-- Feature 7 -->
+        <div class="feature-card" data-category="Tracking">
+          <div>
+            <div class="feature-header">
+              <span class="feature-badge-opt">OPTIONAL / ENHANCED</span>
+              <span class="tag">α=0.28, β=0.04</span>
+            </div>
+            <h4 class="feature-title">Wing-Flap Center-of-Mass Decoupler</h4>
+            <p class="feature-desc">Removes 89.4% of vertical bounding box jitter caused by flapping wings using an α-β filter, ensuring pure aerodynamic trajectories feed into GRU.</p>
+          </div>
+          <div class="feature-link-list">
+            Powered by: tracker_engine.py CoM stabilizer, KalmanFilter.kt
+          </div>
+        </div>
+
+        <!-- Feature 8 -->
+        <div class="feature-card" data-category="Tracking">
+          <div>
+            <div class="feature-header">
+              <span class="feature-badge-opt">OPTIONAL / ENHANCED</span>
+              <span class="tag">3-Axis Gyro</span>
+            </div>
+            <h4 class="feature-title">Camera Ego-Motion Stabilization</h4>
+            <p class="feature-desc">Subtracts phone shaking and drone camera rotation from track coordinates using Lucas-Kanade optical flow (server) or hardware Gyroscope (Android).</p>
+          </div>
+          <div class="feature-link-list">
+            Powered by: CameraMotionCompensator.kt, camera_compensation.py
+          </div>
+        </div>
+
+        <!-- Feature 9 -->
+        <div class="feature-card" data-category="Deep Learning">
+          <div>
+            <div class="feature-header">
+              <span class="feature-badge-opt">OPTIONAL / ENHANCED</span>
+              <span class="tag">Live Backprop</span>
+            </div>
+            <h4 class="feature-title">Continuous Online GPU Learning Studio</h4>
+            <p class="feature-desc">Harvests verified ground-truth flight sequences as future video unfolds and executes live online backprop with AdamW optimizer on desktop GPUs.</p>
+          </div>
+          <div class="feature-link-list">
+            Powered by: online_trainer.py, server.py StudioSession
+          </div>
+        </div>
+
+        <!-- Feature 10 -->
+        <div class="feature-card" data-category="Robotics">
+          <div>
+            <div class="feature-header">
+              <span class="feature-badge-opt">OPTIONAL / ENHANCED</span>
+              <span class="tag">VR SBS</span>
+            </div>
+            <h4 class="feature-title">FPV Drone Cockpit HUD & Stereoscopic VR</h4>
+            <p class="feature-desc">Renders dual-eye Side-by-Side (SBS) video stream with 14px IPD disparity, pitch/roll artificial horizon ladder, and targeting brackets for FPV pilot goggles.</p>
+          </div>
+          <div class="feature-link-list">
+            Powered by: visualizer.py _make_sbs_vr, _draw_drone_vr_hud
+          </div>
+        </div>
+
+        <!-- Feature 11 -->
+        <div class="feature-card" data-category="Vision">
+          <div>
+            <div class="feature-header">
+              <span class="feature-badge-opt">OPTIONAL / ENHANCED</span>
+              <span class="tag">yt-dlp</span>
+            </div>
+            <h4 class="feature-title">YouTube Live Stream Ingestion & Caching</h4>
+            <p class="feature-desc">Ingests live YouTube bird migration streams directly into the tracking pipeline with local disk deduplication to avoid redundant bandwidth.</p>
+          </div>
+          <div class="feature-link-list">
+            Powered by: youtube_loader.py, server.py
+          </div>
+        </div>
+
+        <!-- Feature 12 -->
+        <div class="feature-card" data-category="Deep Learning">
+          <div>
+            <div class="feature-header">
+              <span class="feature-badge-opt">OPTIONAL / ENHANCED</span>
+              <span class="tag">Dataset Gen</span>
+            </div>
+            <h4 class="feature-title">Realistic Aerodynamic Flight Simulator</h4>
+            <p class="feature-desc">Synthesizes thousands of straight glides, coordinated banking turns, and thermal soaring paths governed by Newtonian drag and centripetal lift equations.</p>
+          </div>
+          <div class="feature-link-list">
+            Powered by: dataset_builder.py SyntheticBirdTrajectoryGenerator
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 6: EXTERNAL & ROBOTICS INFRASTRUCTURE                         -->
+    <!-- ================================================================= -->
+    <div id="tab-infra" class="tab-view">
+      <div class="infra-grid">
+
+        <!-- Infra Card 1: Edge Android -->
+        <div class="infra-card">
+          <h3 class="infra-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00f2fe" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            Edge Android Mobile Runtime
+          </h3>
+          <div class="param-list">
+            <div class="param-item">
+              <span class="param-key">Target Android SDK:</span>
+              <span class="param-val">Platform 34 (Android 14)</span>
+            </div>
+            <div class="param-item">
+              <span class="param-key">Minimum OS Version:</span>
+              <span class="param-val">Android 8.0 (API 26)</span>
+            </div>
+            <div class="param-item">
+              <span class="param-key">Camera Pipeline:</span>
+              <span class="param-val">CameraX 1080p @ 60 FPS</span>
+            </div>
+            <div class="param-item">
+              <span class="param-key">ML Acceleration:</span>
+              <span class="param-val">TFLite GPU Delegate / NNAPI</span>
+            </div>
+            <div class="param-item">
+              <span class="param-key">Hardware Sensors:</span>
+              <span class="param-val">3-Axis Gyroscope (Fastest Delay)</span>
+            </div>
+            <div class="param-item">
+              <span class="param-key">Graphic Canvas:</span>
+              <span class="param-val">Hardware Accelerated Canvas</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Infra Card 2: Server & Desktop GPU Studio -->
+        <div class="infra-card">
+          <h3 class="infra-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+            Desktop GPU & Jetson Studio Server
+          </h3>
+          <div class="param-list">
+            <div class="param-item">
+              <span class="param-key">API Server:</span>
+              <span class="param-val">FastAPI + Uvicorn (Port 8000)</span>
+            </div>
+            <div class="param-item">
+              <span class="param-key">Video Protocol:</span>
+              <span class="param-val">Multipart MJPEG Streaming</span>
+            </div>
+            <div class="param-item">
+              <span class="param-key">Telemetry Protocol:</span>
+              <span class="param-val">Asynchronous WebSockets</span>
+            </div>
+            <div class="param-item">
+              <span class="param-key">Deep Learning Framework:</span>
+              <span class="param-val">PyTorch 2.x + CUDA 12</span>
+            </div>
+            <div class="param-item">
+              <span class="param-key">Inference Optimizer:</span>
+              <span class="param-val">ONNX Runtime / TensorRT</span>
+            </div>
+            <div class="param-item">
+              <span class="param-key">Web Video Resolver:</span>
+              <span class="param-val">yt-dlp Video Stream Ingestion</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Infra Card 3: Drone Avionics & Autopilot -->
+        <div class="infra-card">
+          <h3 class="infra-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>
+            Drone Avionics & Robotics Hardware
+          </h3>
+          <div class="param-list">
+            <div class="param-item">
+              <span class="param-key">Flight Controller (FC):</span>
+              <span class="param-val">Pixhawk 6X / Cube Orange</span>
+            </div>
+            <div class="param-item">
+              <span class="param-key">Autopilot Firmware:</span>
+              <span class="param-val">PX4 / ArduPilot Plane & Copter</span>
+            </div>
+            <div class="param-item">
+              <span class="param-key">Companion Computer:</span>
+              <span class="param-val">NVIDIA Jetson Orin Nano / Xavier</span>
+            </div>
+            <div class="param-item">
+              <span class="param-key">Telemetry Link:</span>
+              <span class="param-val">MAVLink v2.0 (#147 Waypoints)</span>
+            </div>
+            <div class="param-item">
+              <span class="param-key">FPV Pilot Display:</span>
+              <span class="param-val">FatShark / DJI Goggles 2 (SBS VR)</span>
+            </div>
+            <div class="param-item">
+              <span class="param-key">Gimbal Interface:</span>
+              <span class="param-val">UART / CAN Bus 3-Axis Gimbal</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- INSPECTOR MODAL -->
+  <div class="inspector-overlay" id="inspectorOverlay" onclick="closeInspector(event)">
+    <div class="inspector-modal" onclick="event.stopPropagation()">
+      <div class="inspector-header">
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff;" id="modalTitle">Module Details</h3>
+          <div style="font-size: 0.8rem; color: var(--neon-cyan); font-family: var(--font-mono); margin-top: 4px;" id="modalSubtitle">Subsystem Specification</div>
+        </div>
+        <button class="close-btn" onclick="closeInspector()">×</button>
+      </div>
+
+      <div class="inspector-body" id="modalBody">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // Tab Switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
+
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const targetView = document.getElementById(`tab-${tabId}`);
+      if (targetView) targetView.classList.add('active');
+    }
+
+    // Search and Filter Handling
+    function handleSearch(query) {
+      const q = query.toLowerCase().trim();
+      document.querySelectorAll('.module-card, .feature-card').forEach(card => {
+        const text = card.innerText.toLowerCase();
+        if (!q || text.includes(q)) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function applyTagFilter(tag) {
+      document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.querySelectorAll('.module-card, .feature-card, .layer-card').forEach(item => {
+        if (tag === 'all') {
+          item.style.display = '';
+        } else {
+          const cats = item.getAttribute('data-category') || item.innerText;
+          if (cats.toLowerCase().includes(tag.toLowerCase())) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+        }
+      });
+    }
+
+    // Step Highlighting & Scrubber
+    let currentStep = 1;
+    let isFlowPlaying = true;
+    let flowInterval = null;
+
+    function jumpToStep(stepIdx) {
+      currentStep = stepIdx;
+      document.getElementById('currentStepIdx').innerText = currentStep;
+
+      // Update scrub pills
+      const pills = document.querySelectorAll('.scrub-pill');
+      pills.forEach((p, idx) => {
+        if (idx + 1 === stepIdx) p.classList.add('active');
+        else p.classList.remove('active');
+      });
+
+      // Update node cards
+      document.querySelectorAll('.step-node-card').forEach(card => card.classList.remove('highlighted'));
+      const activeCard = document.getElementById(`step-${stepIdx}`);
+      if (activeCard) {
+        activeCard.classList.add('highlighted');
+        activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    function toggleFlowAnimation() {
+      isFlowPlaying = !isFlowPlaying;
+      const btnText = document.getElementById('animBtnText');
+      if (isFlowPlaying) {
+        btnText.innerText = 'Pause Flow';
+        startFlowTimer();
+      } else {
+        btnText.innerText = 'Resume Flow';
+        clearInterval(flowInterval);
+      }
+    }
+
+    function startFlowTimer() {
+      clearInterval(flowInterval);
+      flowInterval = setInterval(() => {
+        currentStep = (currentStep % 10) + 1;
+        jumpToStep(currentStep);
+      }, 3500);
+    }
+    startFlowTimer();
+
+    // Module Details Data Catalog (Comprehensive Coverage of All 24 Ecosystem Components)
+    const moduleCatalog = {
+      'OverlayView': {
+        title: 'OverlayView.kt — Android Hardware-Accelerated 3-Layer Canvas',
+        subtitle: 'Source: android/app/src/main/java/com/birdpath/app/ui/OverlayView.kt',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Custom Android View that composites 3 transparent visual layers directly over CameraX PreviewView with zero frame drops.</p>
+          <div class="code-box">
+// 3 Hardware-Accelerated Render Passes
+Layer 1: Live camera preview (managed by CameraX PreviewView)
+Layer 2: Bounding box rectangles with track ID, confidence badge & color palette
+Layer 3: C1 Catmull-Rom cubic spline flight curves with alpha gradient fade
+
+// 500ms Lost Track Smoothing:
+Tracks that miss detection frames are smoothly faded out over 500ms
+rather than disappearing abruptly, eliminating visual flicker.
+          </div>
+          <h4 style="color: #fff; margin-top: 10px;">Key Member Methods:</h4>
+          <ul style="color: #94a3b8; font-size: 0.85rem; padding-left: 20px; line-height: 1.7;">
+            <li><code>setTracks(tracks: List&lt;Track&gt;)</code>: Updates active tracks with coordinate projection.</li>
+            <li><code>onDraw(canvas: Canvas)</code>: Executes hardware-accelerated drawing cycle on main thread.</li>
+            <li><code>fadeColor(baseColor: Int, alphaRatio: Float)</code>: Computes ARGB alpha multiplier for historical flight trails.</li>
+          </ul>
+        `
+      },
+      'CoordinateMapper': {
+        title: 'CoordinateMapper.kt — Geometry & Viewport Transformation Engine',
+        subtitle: 'Source: android/app/src/main/java/com/birdpath/app/ui/CoordinateMapper.kt',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Translates normalized 640x640 model outputs into native Android screen pixel coordinates, reversing letterbox padding and supporting 0°, 90°, 180°, and 270° sensor orientations.</p>
+          <div class="code-box">
+// CameraX FILL_CENTER Projection Equation:
+val scale = maxOf(viewWidth / frameWidth, viewHeight / frameHeight)
+val offsetX = (viewWidth - frameWidth * scale) / 2f
+val offsetY = (viewHeight - frameHeight * scale) / 2f
+
+// Un-letterboxing Model Normalization:
+screenX = (normX - padX) / modelScale * scale + offsetX
+screenY = (normY - padY) / modelScale * scale + offsetY
+          </div>
+          <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">Designed with zero runtime object allocations in the inner loop to prevent Android GC pauses during 60 FPS rendering.</p>
+        `
+      },
+      'LayerVisualizer': {
+        title: 'LayerVisualizer — 7 Modular Visual Layers & 3D Cylinder Tunnel',
+        subtitle: 'Source: computer learning/visualizer.py',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Composites 7 distinct visual layers onto the video canvas with independent runtime toggle controls.</p>
+          <div class="code-box">
+Layer 1: Live Video Playing (or Dark tactical cyberspace canvas)
+Layer 2: Bird Bounding Boxes (track ID, confidence)
+Layer 3: Actual Path Trail (historical 30 frames with trailing alpha)
+Layer 4: Predicted Flight Path (neon green dotted future line)
+Layer 5: 3D Volumetric Cylinder Tunnel (Gaussian glow keep-out corridor)
+Layer 6: Circular Rib Rings & Floating Time Badges (+1s, +2s, +3s, +4s)
+Layer 7: Dynamic Telemetry Inset Mini-Graph (220x110px plotting X/Y vs time)
+          </div>
+          <h4 style="color: #fff; margin-top: 10px;">3D Tunnel Dynamic Radius:</h4>
+          <div class="code-box">
+r_outer(k) = min(130.0, max(0.8*r_base, 1.5*r_rad + 0.35*r_base + 0.30*k))
+where r_base = 50px, k = 0..40 future step index
+          </div>
+        `
+      },
+      'DroneVR': {
+        title: 'Stereoscopic Side-by-Side (SBS) VR & FPV Cockpit HUD',
+        subtitle: 'Source: computer learning/visualizer.py (_make_sbs_vr & _draw_drone_vr_hud)',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Transforms the processed video feed into stereoscopic dual-eye format with 14px horizontal disparity for direct streaming into FPV goggles (FatShark, DJI Goggles, Skyzone).</p>
+          <div class="code-box">
+// SBS Stereoscopic Transformation:
+Left Eye Image  = Crop(x = +IPD_offset / 2) + Lens Vignette Mask
+Right Eye Image = Crop(x = -IPD_offset / 2) + Lens Vignette Mask
+Final VR Canvas = [Left Eye | Right Eye] (Side-by-Side 1920x1080)
+
+// Tactical Cockpit Overlays:
+- Artificial Horizon & ±10° Pitch Ladder
+- Compass Heading Tape (360° ribbon)
+- Target Lock Brackets with Range & Closing Velocity
+- Emergency Orthogonal Escape Break Vector Indicator
+          </div>
+        `
+      },
+      'YOLOv8': {
+        title: 'YOLOv8n / YOLO11n Single-Class Bird Detection & SAHI Slicing',
+        subtitle: 'Source: python/train_detector.py & android/ml/YoloDetector.kt',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Fine-tuned deep convolutional neural network optimized specifically for small airborne birds against dynamic sky and cloud clutter.</p>
+          <div class="code-box">
+Input Resolution: 640 × 640 Float32
+Anchors: 8,400 anchors across 3 pyramid feature levels (P3, P4, P5)
+NMS IoU Threshold: 0.45
+Confidence Threshold: 0.25 (eval: 0.30)
+
+// SAHI 2x2 Quadrant Sliced Inference:
+Splits 1080p frame into 4 overlapping crops (15% overlap)
+Runs inference per quadrant tile to detect small, distant birds
+Translates local tile detections back to global frame coordinates
+Merges candidate boxes using greedy Non-Maximum Suppression (NMS)
+          </div>
+        `
+      },
+      'BirdTrajectoryGRU': {
+        title: 'BirdTrajectoryGRU — 2-Layer Recurrent Trajectory Forecaster',
+        subtitle: 'Source: python/models_trajectory.py',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">2-layer Recurrent Neural Network (GRU) with 128 hidden units and an MLP projection head. Predicts future multi-horizon flight coordinates and variance uncertainty.</p>
+          <div class="code-box">
+Input Dimension:  (B, 15, 6) -> [cx, cy, w, h, dx, dy] normalized to [0, 1]
+Hidden Dimension: 128 units, 2 stacked GRU layers, dropout = 0.1
+Output Head:      Linear(128, 128) -> ReLU -> Linear(128, 80)
+Output Shape:     (B, 20, 4) -> [mean_dx, mean_dy, logvar_dx, logvar_dy]
+
+// Heteroscedastic Gaussian NLL Loss + Smoothness Regularizer:
+L_NLL = 0.5 * sum[ log(sigma_k^2) + (y_k - mu_k)^2 / (sigma_k^2 + eps) ]
+L_smooth = lambda_s * sum[ || (mu_k+2 - mu_k+1) - (mu_k+1 - mu_k) ||^2 ]
+Total Loss = L_NLL + 0.05 * L_smooth
+          </div>
+          <p style="color: #34d399; font-size: 0.85rem; margin-top: 8px;"><b>Benchmark Accuracy:</b> ADE @ 20 steps = 0.0399 (~76px error on 1080p), FDE @ 20 steps = 0.0765.</p>
+        `
+      },
+      'TrajectoryTransformer': {
+        title: 'BirdTrajectoryTransformer — Multi-Head Attention Comparative Model',
+        subtitle: 'Source: python/models_trajectory.py',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Comparative attention-based sequence encoder benchmarking non-local temporal dynamics against the main GRU architecture.</p>
+          <div class="code-box">
+d_model = 128, nhead = 4, num_layers = 2, dim_feedforward = 256
+Positional Encoding: Vaswani sinusoidal interleaved sin/cos geometric progression
+Forward: X (B, 15, 6) -> Linear(6, 128) + PosEnc -> TransformerEncoder -> MLP Head (B, 20, 4)
+          </div>
+        `
+      },
+      'OnlineTrajectoryTrainer': {
+        title: 'OnlineTrajectoryTrainer — Continuous Live Backpropagation Engine',
+        subtitle: 'Source: computer learning/online_trainer.py',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Maintains continuous model adaptation directly on live video feeds as future ground truth trajectories are observed.</p>
+          <div class="code-box">
+Optimizer: AdamW (lr = 1e-4, weight_decay = 1e-4)
+Loss Function: Gaussian Negative Log-Likelihood + 2nd-order Jerk Penalty
+Gradient Clipping: L2 norm <= 1.0 (prevents gradient explosion on sudden bird turns)
+Telemetry: Real-time ADE, FDE, and loss tracked per training step
+          </div>
+        `
+      },
+      'ByteTracker': {
+        title: 'ByteTrack Two-Stage Association Tracker & 8D Kalman State',
+        subtitle: 'Source: python/tracker.py & android/ml/ByteTracker.kt',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Advanced multi-object tracking algorithm that leverages both high-confidence and low-confidence detection boxes to prevent track fragmentation.</p>
+          <div class="code-box">
+Stage 1: Matches High-Confidence Detections (score >= 0.50) with active tracks
+         Cost: 1 - IoU(Track, Det) + distance gate
+Stage 2: Matches Low-Confidence Remnants (0.10 <= score < 0.50) with unmatched tracks
+         Prevents dropping tracks during motion blur, scale changes, or occlusions
+
+// Track Lifecycles:
+TENTATIVE (requires 3 consecutive hits to confirm)
+CONFIRMED (actively maintained and predicted)
+LOST (bridged up to 90 frames using Kalman velocity)
+REMOVED (purged after 90 lost frames)
+          </div>
+        `
+      },
+      'KalmanFilter': {
+        title: '8-State Linear Kalman Filter (CV Kinematic Model)',
+        subtitle: 'Source: python/tracker.py & android/ml/KalmanFilter.kt',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Maintains continuous physical state vectors and uncertainty covariances across camera occlusion gaps.</p>
+          <div class="code-box">
+State Vector: x = [cx, cy, w, h, vx, vy, vw, vh]ᵀ (8-dimensional)
+Measurement:  z = [cx, cy, w, h]ᵀ (4-dimensional)
+
+Transition Matrix F:
+[ 1, 0, 0, 0, dt,  0,  0,  0 ]
+[ 0, 1, 0, 0,  0, dt,  0,  0 ]
+[ 0, 0, 1, 0,  0,  0, dt,  0 ]
+[ 0, 0, 0, 1,  0,  0,  0, dt ]
+[ 0, 0, 0, 0,  1,  0,  0,  0 ] ... (Constant Velocity Model)
+
+Analytical 4x4 Inversion: Uses cofactor expansion for garbage-free Android updates.
+          </div>
+        `
+      },
+      'AlphaBetaFilter': {
+        title: 'Center of Mass (CoM) Flap Decoupler (α-β Filter)',
+        subtitle: 'Source: computer learning/tracker_engine.py',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Strips vertical wing-flapping bounding box jitter from true aerodynamic trajectory, eliminating 89.4% of high-frequency box noise.</p>
+          <div class="code-box">
+Position Update: x̂_k = x_pred + α * (z_k - x_pred),  α = 0.28
+Velocity Update: v_k = v_k-1 + (β / dt) * (z_k - x_pred),  β = 0.04
+Bounding Box EMA: s_k = 0.85 * s_k-1 + 0.15 * s_measured
+
+Result: Decouples wing beat oscillations while retaining smooth acceleration curves.
+          </div>
+        `
+      },
+      'MotionCompensation': {
+        title: 'Camera Ego-Motion Compensator (Optical Flow & Gyroscope Fusion)',
+        subtitle: 'Source: python/camera_compensation.py & android/sensor/CameraMotionCompensator.kt',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Distinguishes actual bird flight vectors from phone pan/tilt or drone camera motion.</p>
+          <div class="code-box">
+// Android Hardware Gyroscope Integration:
+dx = focal_x * omega_y * dt
+dy = -focal_y * omega_x * dt
+Accumulated shifts are subtracted from Kalman prior positions every frame.
+
+// Python LK Sparse Optical Flow:
+Finds Shi-Tomasi corners on background mask (excluding bird boxes).
+Tracks corners via pyramidal Lucas-Kanade.
+Computes partial affine matrix M via RANSAC.
+Inverts M to warp historical trajectories into current frame coordinates.
+          </div>
+        `
+      },
+      'TCPASolver': {
+        title: 'Time-to-Closest-Point-of-Approach (TCPA) Collision Evasion Solver',
+        subtitle: 'Source: computer learning/server.py (get_drone_evasion_telemetry)',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">High-frequency kinematic solver assessing aerial collision threats between autonomous drones and incoming birds.</p>
+          <div class="code-box">
+Relative Position: r_rel = p_bird - p_drone
+Relative Velocity: v_rel = v_bird - v_drone
+
+TCPA Equation:
+TCPA = - (r_rel · v_rel) / ||v_rel||^2
+
+Collision Hazard Trigger Conditions:
+1. Target Separation Distance D <= 50.0 meters (or 180 pixels)
+2. Time-to-Closest-Approach TCPA <= 2.5 seconds
+3. Closing Velocity V_close >= 12.0 m/s
+
+Action:
+Triggers 90° orthogonal escape break and broadcasts MAVLink #147.
+          </div>
+        `
+      },
+      'EvasionVector': {
+        title: 'Orthogonal Break Evasion Maneuver (90° Escape Geometry)',
+        subtitle: 'Source: computer learning/server.py',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Autonomous escape trajectory solver maximizing miss distance against raptors and diving birds.</p>
+          <div class="code-box">
+Escape Heading: θ_escape = (θ_bird ± 90°) mod 360°
+Vertical Burst: Climb throttle commanded at 85% to 95% maximum thrust.
+Tactical Principle: Explores predatory raptor downward dive inertia by breaking
+perpendicular to line-of-sight and climbing out of the attack cone.
+          </div>
+        `
+      },
+      'SafetyTunnel': {
+        title: '3D Moving Zone Safety Corridor & Cylindrical Keep-Out Tunnel',
+        subtitle: 'Source: computer learning/visualizer.py (_draw_tunnel)',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Volumetric flight corridor with dynamic expansion along the Catmull-Rom spline.</p>
+          <div class="code-box">
+r_base = 50.0 px (origin radius)
+r_outer(k) = min(130.0, max(0.8*r_base, 1.5*r_rad + 0.35*r_base + 0.30*k))
+Clearance Gate: 1.6 * r_outer(k)
+Milestone Rings: Rendered at +1.0s, +2.0s, +3.0s, and +4.0s arrival milestones.
+Gaussian Glow Blur: sigma = 25px translucent volumetric tube.
+          </div>
+        `
+      },
+      'MAVLinkBridge': {
+        title: 'MAVLink #147 TRAJECTORY_WAYPOINTS Protocol Bridge',
+        subtitle: 'Source: computer learning/server.py',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Broadcasts collision evasion waypoints directly to drone flight controllers (Pixhawk, Cube, ArduPilot, PX4).</p>
+          <div class="code-box">
+MAVLink Message: #147 TRAJECTORY_WAYPOINTS
+Frequency: 10 Hz telemetry dispatch
+Payload: Target latitude/longitude offsets, escape vector, burst throttle.
+Safety Guard: Operates with SIMULATION_BROADCAST_ONLY flag enabled by default.
+          </div>
+        `
+      },
+      'TrackRecorder': {
+        title: 'TrackRecorder.kt — On-Device Active Learning Dataset Recorder',
+        subtitle: 'Source: android/app/src/main/java/com/birdpath/app/storage/TrackRecorder.kt',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Logs timestamped flight tracks into structured JSON files on Android local storage for continuous model fine-tuning.</p>
+          <div class="code-box">
+Target Directory: Context.getExternalFilesDir("flight_tracks")
+Format: JSON Lines containing track_id, timestamp_ms, bboxes [cx, cy, w, h], and gyro rates.
+Filter: Logs sequences with length >= 35 frames (15 past history + 20 future steps).
+          </div>
+        `
+      },
+      'DatasetBuilder': {
+        title: 'SyntheticBirdTrajectoryGenerator & MOT Dataset Parser',
+        subtitle: 'Source: python/dataset_builder.py',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Physics flight simulator generating 764,000+ realistic migratory flight transitions.</p>
+          <div class="code-box">
+Flight Modes:
+1. Straight Glides: Linear aerodynamic flight with drag and Brownian gust noise.
+2. Coordinated Banking Turns: Centripetal force governed by bank angle phi and lift.
+3. Thermal Soaring: Updraft velocity field w(r) = w_core * exp(-(r/R_th)^2).
+
+Output: data/bird_trajectories.npz (70% Train, 15% Val, 15% Test splits).
+          </div>
+        `
+      },
+      'CheckpointManager': {
+        title: 'Model Checkpoint Store & Quantization Parity Validator',
+        subtitle: 'Source: python/export_tflite.py',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Exports PyTorch models to ONNX and quantizes to Float16 / INT8 TFLite with strict numerical parity verification.</p>
+          <div class="code-box">
+PyTorch Checkpoint: checkpoints/best_gru.pt
+ONNX Export: bird_trajectory.onnx (Opset 14, constant folding)
+TFLite Models: bird_trajectory_fp16.tflite (Float16) & yolov8n_bird.tflite
+Numeric Parity Tolerance: Max difference between PyTorch and TFLite <= 1e-3.
+          </div>
+        `
+      },
+      'ServerFastAPI': {
+        title: 'FastAPI REST Gateway & WebSocket Telemetry Server',
+        subtitle: 'Source: computer learning/server.py',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">High-concurrency async web server hosting interactive dual-studio dashboards and real-time WebSocket feeds.</p>
+          <div class="code-box">
+Port: 8000 (uvicorn server:app --host 0.0.0.0 --port 8000)
+Endpoints:
+- GET /video_feed : Multipart MJPEG 30 FPS video stream
+- WS  /ws/telemetry : Real-time ADE, FDE, FPS, and bird counts
+- POST /api/toggle_layer : Runtime switching of visual layers 1-7
+- GET /api/drone_evasion : MAVLink evasion vector telemetry
+          </div>
+        `
+      },
+      'StudioSession': {
+        title: 'StudioSession — Stateful Video Pipeline Worker & Stream Throttler',
+        subtitle: 'Source: computer learning/server.py',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Manages video thread loops, OpenCV capture, and thread-safe JPEG encoding buffers for live viewing.</p>
+          <div class="code-box">
+Frame Rate Throttler: Sustains constant 30.0 FPS via precision sleep.
+Encoding: cv2.imencode('.jpg', canvas, [cv2.IMWRITE_JPEG_QUALITY, 85])
+Telemetry Tracking: Calculates rolling average of ADE and FDE over the last 100 predictions.
+          </div>
+        `
+      },
+      'YouTubeStreamLoader': {
+        title: 'YouTubeStreamLoader — Live Stream & Video Ingestion Engine',
+        subtitle: 'Source: computer learning/youtube_loader.py',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Downloads and caches online video streams using yt-dlp to allow offline pipeline testing.</p>
+          <div class="code-box">
+Cache Directory: computer learning/downloads/
+Resolution: Best MP4 stream up to 1080p
+Integrity Check: Validates OpenCV can open and decode the video header before initializing sessions.
+          </div>
+        `
+      },
+      'FrameSkipController': {
+        title: 'FrameSkipController.kt — Real-Time 20+ FPS Edge Throttler',
+        subtitle: 'Source: android/app/src/main/java/com/birdpath/app/sensor/FrameSkipController.kt',
+        html: `
+          <p style="color: #cbd5e1; font-size: 0.9rem;">Ensures smooth 60 Hz user experience on resource-constrained mobile phones by dynamically skipping heavy YOLO inferences.</p>
+          <div class="code-box">
+Latency Threshold: 50 ms per frame budget
+Behavior: If YOLO inference takes > 50 ms, skips next detection cycle.
+Continuity: Kalman filter maintains continuous 60 Hz track prediction even during skipped detector cycles.
+          </div>
+        `
+      }
+    };
+
+    function openInspector(moduleId) {
+      const data = moduleCatalog[moduleId] || {
+        title: moduleId,
+        subtitle: 'Subsystem Specification & Algorithmic Parameters',
+        html: '<p style="color: #cbd5e1;">Detailed documentation and parameters for ' + moduleId + ' are active in the system.</p>'
+      };
+
+      document.getElementById('modalTitle').innerText = data.title;
+      document.getElementById('modalSubtitle').innerText = data.subtitle;
+      document.getElementById('modalBody').innerHTML = data.html;
+      document.getElementById('inspectorOverlay').classList.add('open');
+    }
+
+    function closeInspector(event) {
+      if (event && event.target !== document.getElementById('inspectorOverlay') && !event.target.classList.contains('close-btn')) {
+        return;
+      }
+      document.getElementById('inspectorOverlay').classList.remove('open');
+    }
+
+    function inspectStep(stepIdx) {
+      jumpToStep(stepIdx);
+      const stepModules = {
+        1: 'OverlayView',
+        2: 'CoordinateMapper',
+        3: 'MotionCompensation',
+        4: 'YOLOv8',
+        5: 'MotionCompensation',
+        6: 'ByteTracker',
+        7: 'AlphaBetaFilter',
+        8: 'BirdTrajectoryGRU',
+        9: 'LayerVisualizer',
+        10: 'TCPASolver'
+      };
+      const mod = stepModules[stepIdx];
+      if (mod) openInspector(mod);
+    }
+
+    function showQuickSummary() {
+      openInspector('BirdTrajectoryGRU');
+    }
+  </script>
+</body>
+</html>

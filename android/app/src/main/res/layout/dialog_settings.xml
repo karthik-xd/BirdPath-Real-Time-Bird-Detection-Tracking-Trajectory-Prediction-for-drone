@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title_settings"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Confidence Slider -->
+        <TextView
+            android:id="@+id/tvConfLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Confidence Threshold: 0.25" />
+
+        <SeekBar
+            android:id="@+id/sbConfidence"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="25"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Horizon Slider -->
+        <TextView
+            android:id="@+id/tvHorizonLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Prediction Horizon: 20 points" />
+
+        <SeekBar
+            android:id="@+id/sbHorizon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="25"
+            android:progress="15"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Tiled Inference Switch -->
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchTiled"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/toggle_tiled_inference"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Camera Motion Compensation Switch -->
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchCamComp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/toggle_camera_compensation"
+            android:checked="true"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Layer Toggles -->
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchLayer1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/toggle_layer_1"
+            android:checked="true"
+            android:layout_marginBottom="4dp" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchLayer2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/toggle_layer_2"
+            android:checked="true"
+            android:layout_marginBottom="4dp" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchLayer3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/toggle_layer_3"
+            android:checked="true"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/btnCloseSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_close" />
+
+    </LinearLayout>
+</ScrollView>

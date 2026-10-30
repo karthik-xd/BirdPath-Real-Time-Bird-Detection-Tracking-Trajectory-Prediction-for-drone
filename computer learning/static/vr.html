@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <title>🛸 Drone Anti-Bird VR Cockpit &amp; FPV Teleoperation</title>
+    <style>
+        :root {
+            --bg-dark: #03060a;
+            --hud-cyan: #00e5ff;
+            --hud-green: #00e676;
+            --hud-warn: #ef4444;
+            --panel-bg: rgba(10, 16, 28, 0.88);
+            --border: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Top HUD Navigation Bar */
+        .vr-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 52px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 1000;
+        }
+
+        .vr-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--hud-cyan);
+            letter-spacing: 0.5px;
+        }
+
+        .vr-badge {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #f87171;
+            font-size: 0.70rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .vr-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-vr {
+            background: #090e18;
+            color: #94a3b8;
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-vr:hover {
+            color: #fff;
+            border-color: var(--hud-cyan);
+        }
+
+        .btn-vr.active {
+            background: var(--hud-cyan);
+            color: #03060a;
+            border-color: var(--hud-cyan);
+            font-weight: 700;
+        }
+
+        /* Floating Layer Filter Pill Bar */
+        .layer-bar {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(8, 14, 24, 0.92);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 6px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+            flex-wrap: wrap;
+            max-width: 95vw;
+            justify-content: center;
+        }
+
+        .layer-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            background: #0b111e;
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.74rem;
+            color: #cbd5e1;
+            transition: all 0.2s;
+        }
+
+        .layer-pill:hover {
+            border-color: var(--hud-cyan);
+        }
+
+        .layer-pill input {
+            accent-color: var(--hud-cyan);
+            cursor: pointer;
+        }
+
+        /* Main Viewport */
+        .viewport-container {
+            width: 100vw;
+            height: 100vh;
+            padding-top: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(circle at center, #070d18 0%, #020408 100%);
+        }
+
+        .stream-view {
+            width: 100%;
+            height: calc(100vh - 52px);
+            object-fit: contain;
+            display: block;
+        }
+
+        /* Threat Intercept Banner */
+        .threat-banner {
+            position: fixed;
+            top: 64px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(239, 68, 68, 0.25);
+            border: 1px solid rgba(239, 68, 68, 0.7);
+            color: #fee2e2;
+            padding: 6px 18px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            font-family: monospace;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 999;
+            box-shadow: 0 0 16px rgba(239, 68, 68, 0.4);
+            animation: pulse-red 1.5s infinite;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+            50% { opacity: 0.85; transform: translateX(-50%) scale(1.02); }
+        }
+
+        /* Fullscreen SBS Vignette Mode */
+        .sbs-active .stream-view {
+            object-fit: fill;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <div class="vr-nav">
+        <div class="vr-title">
+            <span>🛸 DRONE VR FPV COCKPIT</span>
+            <span class="vr-badge">SIMULATION ONLY</span>
+        </div>
+
+        <div class="vr-controls">
+            <!-- Session Switch -->
+            <button class="btn-vr active" id="btnSessLearning" onclick="switchSession('learning')">Learning Area</button>
+            <button class="btn-vr" id="btnSessTesting" onclick="switchSession('testing')">Testing Studio</button>
+
+            <!-- Mode Switch: Monoscopic vs Stereoscopic SBS -->
+            <button class="btn-vr active" id="btnModeMono" onclick="setVRMode('mono')">🖥️ Monoscopic HUD</button>
+            <button class="btn-vr" id="btnModeSBS" onclick="setVRMode('sbs')">🥽 Stereoscopic SBS 3D</button>
+
+            <!-- IPD Disparity Slider (for SBS Mode) -->
+            <div id="ipdControl" style="display: none; align-items: center; gap: 6px; font-size: 0.74rem; color: #94a3b8;">
+                <span>IPD:</span>
+                <input type="range" id="ipdSlider" min="0" max="30" value="14" oninput="onIpdChange(this.value)" style="width: 70px; accent-color: var(--hud-cyan);">
+                <span id="ipdVal">14px</span>
+            </div>
+
+            <button class="btn-vr" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+            <button class="btn-vr" onclick="window.history.back()">✕ Back</button>
+        </div>
+    </div>
+
+    <!-- Threat Intercept Alert Banner -->
+    <div class="threat-banner" id="threatBanner">
+        <span>⚠️ THREAT INTERCEPT ALERT:</span>
+        <span id="threatDetails">BIRD CLOSING AT 14.2 px/f</span>
+        <span style="color: #4ade80;" id="threatEscape">EVADE -> HEADING 305°</span>
+    </div>
+
+    <!-- Main Stream Viewport -->
+    <div class="viewport-container" id="viewportContainer">
+        <img id="vrStreamImg" class="stream-view" src="/video_feed/learning" alt="Drone VR Stream" />
+    </div>
+
+    <!-- Floating Selected Layers Filter Bar -->
+    <div class="layer-bar">
+        <span style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">VR Layers:</span>
+        <label class="layer-pill" title="Toggle Background Video">
+            <input type="checkbox" id="chkL1" checked onchange="syncLayers()">
+            <span>L1: Video</span>
+        </label>
+        <label class="layer-pill" title="Toggle Bird Threat Boxes">
+            <input type="checkbox" id="chkL2" checked onchange="syncLayers()">
+            <span>L2: Boxes</span>
+        </label>
+        <label class="layer-pill" title="Toggle Actual Ground Truth Path">
+            <input type="checkbox" id="chkL3" checked onchange="syncLayers()">
+            <span>L3: Actual</span>
+        </label>
+        <label class="layer-pill" title="Toggle GRU Forecast Centerline">
+            <input type="checkbox" id="chkL4" checked onchange="syncLayers()">
+            <span>L4: Predicted</span>
+        </label>
+        <label class="layer-pill" title="Toggle 3D Cylinder Glow Tunnel">
+            <input type="checkbox" id="chkL5" checked onchange="syncLayers()">
+            <span>L5: Tunnel</span>
+        </label>
+        <label class="layer-pill" title="Toggle 3D Circular Rib Rings">
+            <input type="checkbox" id="chkL6" checked onchange="syncLayers()">
+            <span style="color: #6ee7b7; font-weight: 600;">L6: Rings</span>
+        </label>
+        <label class="layer-pill" title="Toggle HUD Inset Graph">
+            <input type="checkbox" id="chkL7" checked onchange="syncLayers()">
+            <span>L7: Graph</span>
+        </label>
+        <label class="layer-pill" title="Toggle Drone Cockpit Avionics Reticle & Evasion Arrow">
+            <input type="checkbox" id="chkHUD" checked onchange="toggleAvionicsHUD()">
+            <span style="color: #38bdf8; font-weight: 700;">Cockpit HUD</span>
+        </label>
+    </div>
+
+    <script>
+        let currentSession = "learning";
+        let isSbsMode = false;
+        let hudEnabled = true;
+
+        // URL parameter support: /vr?session=testing
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("session") === "testing") {
+            currentSession = "testing";
+        }
+
+        function updateStreamSrc() {
+            const img = document.getElementById("vrStreamImg");
+            img.src = `/video_feed/${currentSession}?t=${Date.now()}`;
+        }
+
+        function switchSession(sess) {
+            currentSession = sess;
+            document.getElementById("btnSessLearning").classList.toggle("active", sess === "learning");
+            document.getElementById("btnSessTesting").classList.toggle("active", sess === "testing");
+            updateStreamSrc();
+            loadCurrentLayers();
+            sendVRSettings();
+        }
+
+        async function setVRMode(mode) {
+            isSbsMode = (mode === "sbs");
+            document.getElementById("btnModeMono").classList.toggle("active", !isSbsMode);
+            document.getElementById("btnModeSBS").classList.toggle("active", isSbsMode);
+            document.getElementById("ipdControl").style.display = isSbsMode ? "flex" : "none";
+            document.getElementById("viewportContainer").classList.toggle("sbs-active", isSbsMode);
+            await sendVRSettings();
+        }
+
+        function onIpdChange(val) {
+            document.getElementById("ipdVal").innerText = val + "px";
+            sendVRSettings();
+        }
+
+        async function toggleAvionicsHUD() {
+            hudEnabled = document.getElementById("chkHUD").checked;
+            await sendVRSettings();
+        }
+
+        async function sendVRSettings() {
+            const ipd = parseInt(document.getElementById("ipdSlider").value) || 14;
+            const endpoint = `/api/${currentSession}/set_drone_vr`;
+            try {
+                await fetch(endpoint, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        enabled: hudEnabled,
+                        sbs_mode: isSbsMode,
+                        ipd_offset: ipd
+                    })
+                });
+            } catch (e) {}
+        }
+
+        async function loadCurrentLayers() {
+            try {
+                const res = await fetch(`/api/${currentSession}/layers`);
+                const data = await res.json();
+                if (data) {
+                    if (data.layer1 !== undefined) document.getElementById("chkL1").checked = data.layer1;
+                    if (data.layer2 !== undefined) document.getElementById("chkL2").checked = data.layer2;
+                    if (data.layer3 !== undefined) document.getElementById("chkL3").checked = data.layer3;
+                    if (data.layer4 !== undefined) document.getElementById("chkL4").checked = data.layer4;
+                    if (data.layer5 !== undefined) document.getElementById("chkL5").checked = data.layer5;
+                    if (data.layer6 !== undefined) document.getElementById("chkL6").checked = data.layer6;
+                    if (data.layer7 !== undefined) document.getElementById("chkL7").checked = data.layer7;
+                }
+            } catch (e) {}
+        }
+
+        async function syncLayers() {
+            const l1 = document.getElementById("chkL1").checked;
+            const l2 = document.getElementById("chkL2").checked;
+            const l3 = document.getElementById("chkL3").checked;
+            const l4 = document.getElementById("chkL4").checked;
+            const l5 = document.getElementById("chkL5").checked;
+            const l6 = document.getElementById("chkL6").checked;
+            const l7 = document.getElementById("chkL7").checked;
+
+            try {
+                await fetch(`/api/${currentSession}/toggle_layers`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        layer1: l1,
+                        layer2: l2,
+                        layer3: l3,
+                        layer4: l4,
+                        layer5: l5,
+                        layer6: l6,
+                        layer7: l7
+                    })
+                });
+            } catch (e) {}
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {});
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Live Telemetry & Threat Monitor Polling
+        async function pollTelemetry() {
+            try {
+                const res = await fetch(`/api/${currentSession}/stats`);
+                const data = await res.json();
+
+                const banner = document.getElementById("threatBanner");
+                if (data.drone_evasion && data.drone_evasion.threats && data.drone_evasion.threats.length > 0) {
+                    const th = data.drone_evasion.threats[0];
+                    document.getElementById("threatDetails").innerText = `BIRD #${th.bird_id} (${th.threat_level}) • TCPA: ${th.time_to_intercept_sec}s`;
+                    document.getElementById("threatEscape").innerText = `EVADE -> HEADING ${th.evasion_heading_deg}° (THROTTLE ${th.recommended_throttle_pct}%)`;
+                    banner.style.display = "flex";
+                } else {
+                    banner.style.display = "none";
+                }
+            } catch (e) {}
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            switchSession(currentSession);
+            setInterval(pollTelemetry, 600);
+        });
+    </script>
+</body>
+</html>

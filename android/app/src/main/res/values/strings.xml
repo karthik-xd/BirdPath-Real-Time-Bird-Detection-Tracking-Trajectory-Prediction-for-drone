@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">BirdPath</string>
+    <string name="title_settings">Tracking &amp; Prediction Settings</string>
+    <string name="label_confidence">Confidence Threshold</string>
+    <string name="label_horizon">Prediction Horizon (steps)</string>
+    <string name="toggle_tiled_inference">2x2 Tiled Inference (Small Birds)</string>
+    <string name="toggle_camera_compensation">Camera Motion Compensation</string>
+    <string name="toggle_layer_1">Layer 1: Camera Preview</string>
+    <string name="toggle_layer_2">Layer 2: Bounding Boxes &amp; Track ID</string>
+    <string name="toggle_layer_3">Layer 3: Flight Path &amp; Uncertainty</string>
+    <string name="btn_record">REC</string>
+    <string name="btn_settings">Settings</string>
+    <string name="btn_close">Close</string>
+</resources>
