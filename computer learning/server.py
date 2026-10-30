@@ -144,11 +144,15 @@ class StudioSession:
         self._loop_task: Optional[asyncio.Task] = None
 
     async def start(self, url: str, quality: str = "720p", frame_gap: int = 1):
-        # Stop existing task if running
-        self.is_running = False
-        if self._loop_task and not self._loop_task.done():
-            self._loop_task.cancel()
-            await asyncio.sleep(0.15)
+        # Gracefully stop existing task if running
+        if self.is_running:
+            self.is_running = False
+            if self._loop_task and not self._loop_task.done():
+                try:
+                    await asyncio.wait_for(asyncio.shield(self._loop_task), timeout=0.5)
+                except Exception:
+                    self._loop_task.cancel()
+            await asyncio.sleep(0.1)
 
         self.current_url = url
         self.current_quality = quality
@@ -224,7 +228,11 @@ class StudioSession:
                 fps_counter += 1
 
                 # Track & Predict (+ Online learning step if not testing mode)
-                rendered_birds, active_count = self.tracker_engine.process_frame(frame)
+                try:
+                    rendered_birds, active_count = self.tracker_engine.process_frame(frame)
+                except Exception as frame_err:
+                    print(f"[{self.name.capitalize()}] Warning in frame processing: {frame_err}")
+                    rendered_birds, active_count = (self.latest_birds or []), self.active_birds
                 self.active_birds = active_count
                 self.latest_birds = rendered_birds
 
@@ -1003,7 +1011,7 @@ async def get_learning_bird_plot_image(bird_id: int):
 # -------------------------------------------------------------
 @app.get("/api/local_videos")
 async def list_local_videos():
-    """Returns all stored videos in C:\dep learning\computer learning\downloads for instant testing."""
+    r"""Returns all stored videos in C:\dep learning\computer learning\downloads for instant testing."""
     videos = []
     d = DOWNLOADS_DIR
     TITLES = {

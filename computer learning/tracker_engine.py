@@ -32,8 +32,12 @@ class VideoTrackerEngine:
         # COCO 14: bird strictly (reject airplanes, kites, cartoon clutter)
         self.target_classes = target_classes or [14]
 
+        # Determine compute device
+        import torch
+        self.device = 0 if torch.cuda.is_available() else "cpu"
+
         # Load YOLO detector
-        print(f"[TrackerEngine] Loading YOLO model: {yolo_model_path}")
+        print(f"[TrackerEngine] Loading YOLO model: {yolo_model_path} (Target device: {self.device})")
         self.yolo = YOLO(yolo_model_path)
 
         # ByteTracker instance with distance fallback & 90-frame persistence
@@ -93,14 +97,33 @@ class VideoTrackerEngine:
         self.frame_index += 1
         h, w = frame_bgr.shape[:2]
 
-        # 1. YOLO Detection
-        results = self.yolo.predict(
-            frame_bgr,
-            conf=self.conf_thresh,
-            classes=self.target_classes,
-            verbose=False,
-            imgsz=640
-        )
+        # 1. YOLO Detection with resilient CUDA error recovery
+        try:
+            results = self.yolo.predict(
+                frame_bgr,
+                conf=self.conf_thresh,
+                classes=self.target_classes,
+                verbose=False,
+                imgsz=640,
+                device=self.device
+            )
+        except Exception as e:
+            err_str = str(e).lower()
+            if "cuda" in err_str or "accelerator" in err_str or self.device != "cpu":
+                print(f"[TrackerEngine] GPU/CUDA error ({e}). Seamlessly switching to CPU...")
+                self.device = "cpu"
+                if hasattr(self.trainer, "fallback_to_cpu"):
+                    self.trainer.fallback_to_cpu()
+                results = self.yolo.predict(
+                    frame_bgr,
+                    conf=self.conf_thresh,
+                    classes=self.target_classes,
+                    verbose=False,
+                    imgsz=640,
+                    device="cpu"
+                )
+            else:
+                raise e
 
         detections = []
         if len(results) > 0 and results[0].boxes is not None:

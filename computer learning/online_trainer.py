@@ -120,6 +120,13 @@ class OnlineTrajectoryTrainer:
             print(f"[OnlineTrainer] Failed loading {path}: {e}")
             return False
 
+    def fallback_to_cpu(self):
+        """Switches model and tensors to CPU when CUDA errors occur."""
+        if self.device != torch.device("cpu"):
+            print("[OnlineTrainer] Switching GRU Trajectory model to CPU...")
+            self.device = torch.device("cpu")
+            self.model = self.model.to(self.device)
+
     def predict(self, x_history: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """
         Inference: Given x_history (15, 6) or (B, 15, 6),
@@ -132,15 +139,28 @@ class OnlineTrajectoryTrainer:
         else:
             x_arr = x_history
 
-        with torch.no_grad():
-            tx = torch.from_numpy(x_arr.astype(np.float32)).to(self.device)
-            out = self.model(tx)  # (B, 20, 4)
-            means = out[:, :, 0:2].cpu().numpy()
-            logvars = out[:, :, 2:4].cpu().numpy()
+        try:
+            with torch.no_grad():
+                tx = torch.from_numpy(x_arr.astype(np.float32)).to(self.device)
+                out = self.model(tx)  # (B, 20, 4)
+                means = out[:, :, 0:2].cpu().numpy()
+                logvars = out[:, :, 2:4].cpu().numpy()
 
-        if single:
-            return means[0], logvars[0]
-        return means, logvars
+            if single:
+                return means[0], logvars[0]
+            return means, logvars
+        except Exception as e:
+            if "cuda" in str(e).lower() or "accelerator" in str(e).lower():
+                self.fallback_to_cpu()
+                with torch.no_grad():
+                    tx = torch.from_numpy(x_arr.astype(np.float32)).to(self.device)
+                    out = self.model(tx)
+                    means = out[:, :, 0:2].cpu().numpy()
+                    logvars = out[:, :, 2:4].cpu().numpy()
+                if single:
+                    return means[0], logvars[0]
+                return means, logvars
+            raise e
 
     def train_step(self, x_samples: np.ndarray, y_actual_samples: np.ndarray) -> Dict[str, float]:
         """
@@ -151,16 +171,30 @@ class OnlineTrajectoryTrainer:
         if len(x_samples) == 0:
             return {}
 
-        self.model.train()
-        tx = torch.from_numpy(x_samples.astype(np.float32)).to(self.device)
-        ty = torch.from_numpy(y_actual_samples.astype(np.float32)).to(self.device)
+        try:
+            self.model.train()
+            tx = torch.from_numpy(x_samples.astype(np.float32)).to(self.device)
+            ty = torch.from_numpy(y_actual_samples.astype(np.float32)).to(self.device)
 
-        self.optimizer.zero_grad()
-        out = self.model(tx)  # (B, 20, 4)
-        loss = self.criterion(out, ty)
-        loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
-        self.optimizer.step()
+            self.optimizer.zero_grad()
+            out = self.model(tx)  # (B, 20, 4)
+            loss = self.criterion(out, ty)
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
+            self.optimizer.step()
+        except Exception as e:
+            if "cuda" in str(e).lower() or "accelerator" in str(e).lower():
+                self.fallback_to_cpu()
+                tx = torch.from_numpy(x_samples.astype(np.float32)).to(self.device)
+                ty = torch.from_numpy(y_actual_samples.astype(np.float32)).to(self.device)
+                self.optimizer.zero_grad()
+                out = self.model(tx)
+                loss = self.criterion(out, ty)
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
+                self.optimizer.step()
+            else:
+                raise e
 
         # Compute instantaneous metrics
         pred_means = out[:, :, 0:2].detach().cpu().numpy()
