@@ -542,7 +542,7 @@
                 <button class="btn btn-danger" onclick="stopTesting()">
                     <span>⏹</span> Stop
                 </button>
-                <button class="btn btn-secondary" onclick="openDownloadsFolder()" title="Open C:\dep learning\downloads in Windows Explorer">
+                <button class="btn btn-secondary" onclick="openDownloadsFolder()" title="Open C:\dep learning\computer learning\downloads in Windows Explorer">
                     <span>📂</span> Open Saved Folder
                 </button>
                 <button class="btn btn-secondary" onclick="reloadSavedModel()" title="Reload weights trained in Learning Studio">
@@ -897,7 +897,7 @@
                     data.videos.forEach(v => {
                         const opt = document.createElement("option");
                         opt.value = v.path;
-                        opt.innerText = `${v.name} (${v.size_mb} MB)`;
+                        opt.innerText = v.title && v.title !== v.name ? `${v.title} (${v.size_mb} MB)` : `${v.name} (${v.size_mb} MB)`;
                         sel.appendChild(opt);
                     });
                 }

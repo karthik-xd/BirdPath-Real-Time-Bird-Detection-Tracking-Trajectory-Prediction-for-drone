@@ -54,8 +54,8 @@ os.makedirs(STATIC_DIR, exist_ok=True)
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-# Unified Downloads Directory (Root of project)
-DOWNLOADS_DIR = os.path.join(os.path.dirname(CURRENT_DIR), "downloads")
+# Computer Learning Downloads Directory (Local to studio)
+DOWNLOADS_DIR = os.path.join(CURRENT_DIR, "downloads")
 os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 
 # Shared Core Assets
@@ -1003,15 +1003,32 @@ async def get_learning_bird_plot_image(bird_id: int):
 # -------------------------------------------------------------
 @app.get("/api/local_videos")
 async def list_local_videos():
-    """Returns all stored videos in the main downloads folder for instant testing."""
+    """Returns all stored videos in C:\dep learning\computer learning\downloads for instant testing."""
     videos = []
     d = DOWNLOADS_DIR
+    TITLES = {
+        "CJHP6dPjuGY": "Birds Take Flight (Animators Reference)",
+        "C4EeH27TqFI": "Robin Flying SlowMotion",
+        "fdw77vFfcbQ": "Lovely birds flying up high",
+        "qDIl9KaALgg": "Birds flying on sky",
+        "VxuSWrFbYAc": "Birds flying in the air"
+    }
     if os.path.exists(d):
-        for f in os.listdir(d):
+        for f in sorted(os.listdir(d)):
             if f.endswith((".mp4", ".mkv", ".webm")):
                 fp = os.path.join(d, f)
-                sz_mb = round(os.path.getsize(fp) / (1024 * 1024), 2)
-                videos.append({"name": f, "path": fp, "size_mb": sz_mb})
+                if os.path.isfile(fp):
+                    sz_mb = round(os.path.getsize(fp) / (1024 * 1024), 2)
+                    vid_id = f.split("_")[0]
+                    readable_title = TITLES.get(vid_id, f)
+                    videos.append({
+                        "name": f,
+                        "title": readable_title,
+                        "path": fp,
+                        "size_mb": sz_mb
+                    })
+    # Sort largest/main video first
+    videos.sort(key=lambda x: x["size_mb"], reverse=True)
     return {"videos": videos, "download_folder": d}
 
 

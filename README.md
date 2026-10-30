@@ -1,5 +1,13 @@
 # BirdPath: Real-Time Bird Detection, Tracking & Flight Path Prediction
 
+how to run {
+click left-click on folder 
+click terminal 
+type python server.py
+UI_link http://localhost:8000/
+}
+
+
 BirdPath is an end-to-end computer vision and deep learning system for Android and Python. It captures live camera frames, detects flying birds in real time using YOLOv8, tracks individual birds across video frames using an 8-state Kalman Filter and ByteTrack two-stage association, forecasts future flight trajectories using a 2-layer Recurrent Neural Network (GRU) with Gaussian uncertainty variance bands, and renders everything on-device in a hardware-accelerated three-layer overlay.
 
 ---
@@ -214,3 +222,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 - [x] **Camera Motion Compensation**: Gyroscope rotation rate converted to pixel shift isolates bird aerodynamics from handheld phone panning.
 - [x] **Real-Time Performance**: `FrameSkipController` and TFLite GPU Delegate sustain 20+ FPS on mid-range devices with zero UI thread stutter.
 - [x] **Active Learning**: On-phone "REC" mode writes timestamped bounding boxes to JSON for continuous retraining.
+
+CB.PS.I5DAS23010
+CB.PS.I5DAS23008
+CB.PS.I5DAS23054
