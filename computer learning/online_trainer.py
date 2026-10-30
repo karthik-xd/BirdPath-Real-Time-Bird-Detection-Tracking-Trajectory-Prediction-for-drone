@@ -31,7 +31,15 @@ class OnlineTrajectoryTrainer:
         device: Optional[str] = None
     ):
         if device is None:
-            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            self.device = torch.device("cpu")
+            if torch.cuda.is_available():
+                try:
+                    t_test = torch.zeros(1, device="cuda")
+                    torch.cuda.synchronize()
+                    self.device = torch.device("cuda")
+                except Exception as ce:
+                    print(f"[OnlineTrainer] CUDA health check failed ({ce}). Defaulting to CPU.")
+                    self.device = torch.device("cpu")
         else:
             self.device = torch.device(device)
 

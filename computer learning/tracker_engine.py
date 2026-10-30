@@ -32,12 +32,20 @@ class VideoTrackerEngine:
         # COCO 14: bird strictly (reject airplanes, kites, cartoon clutter)
         self.target_classes = target_classes or [14]
 
-        # Determine compute device
+        # Determine compute device with health check
         import torch
-        self.device = 0 if torch.cuda.is_available() else "cpu"
+        self.device = "cpu"
+        if torch.cuda.is_available():
+            try:
+                t_test = torch.zeros(1, device=0)
+                torch.cuda.synchronize()
+                self.device = 0
+            except Exception as cuda_init_err:
+                print(f"[TrackerEngine] CUDA driver health check failed ({cuda_init_err}). Using CPU.")
+                self.device = "cpu"
 
         # Load YOLO detector
-        print(f"[TrackerEngine] Loading YOLO model: {yolo_model_path} (Target device: {self.device})")
+        print(f"[TrackerEngine] Loading YOLO model: {yolo_model_path} (Active device: {self.device})")
         self.yolo = YOLO(yolo_model_path)
 
         # ByteTracker instance with distance fallback & 90-frame persistence
